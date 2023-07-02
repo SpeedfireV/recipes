@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sports/services/router.dart';
 
 void main() {
   runApp(const ProviderScope(child: MainApp()));
@@ -10,12 +11,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(useMaterial3: true),
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
+    return SafeArea(
+      child: MaterialApp.router(
+        theme: ThemeData(
+            colorScheme: ColorScheme.light(
+          primary: Colors.green,
+        )),
+        routerConfig: RouterServices.router,
       ),
     );
   }
