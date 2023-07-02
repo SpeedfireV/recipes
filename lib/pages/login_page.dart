@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sports/constants/colors.dart';
 import 'package:sports/constants/images.dart';
+import 'package:sports/services/router.dart';
 
 class LoginPage extends StatefulHookConsumerWidget {
   const LoginPage({super.key});
@@ -23,153 +24,157 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final passwordController = useTextEditingController();
 
     return Scaffold(
+        backgroundColor: Colors.grey[200],
         body: Column(
-      children: [
-        Expanded(
-          child: ListView(
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: ListView(
                 children: [
-                  SizedBox(height: 16),
-                  Row(
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 16.0),
-                              child: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.arrow_back)),
+                      SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 16.0),
+                                  child: IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(Icons.arrow_back)),
+                                ),
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: Image(
+                                      width: 200,
+                                      height: 200,
+                                      image: AssetImage(Images.login)),
+                                ),
+                              ],
                             ),
-                            Align(
-                              alignment: Alignment.center,
-                              child: Image(
-                                  width: 200,
-                                  height: 200,
-                                  image: AssetImage(Images.login)),
-                            ),
-                          ],
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              SizedBox(height: 20),
+                              TextFormField(
+                                controller: loginController,
+                                decoration: InputDecoration(
+                                    label: Text(
+                                      "Login",
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    border: OutlineInputBorder()),
+                              ),
+                              SizedBox(height: 10),
+                              TextFormField(
+                                controller: mailController,
+                                decoration: InputDecoration(
+                                    label: Text(
+                                      "Mail",
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    border: OutlineInputBorder()),
+                              ),
+                              SizedBox(height: 10),
+                              TextFormField(
+                                controller: passwordController,
+                                decoration: InputDecoration(
+                                    label: Text(
+                                      "Password",
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    border: OutlineInputBorder(),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(Icons.visibility),
+                                      onPressed: () {
+                                        //TODO: Visibility Password
+                                      },
+                                    )),
+                              ),
+                              SizedBox(height: 10),
+                              Text("OR",
+                                  style: TextStyle(
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.w600,
+                                      color: ColorsCustom.darkGrey)),
+                              SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  //TODO: Login Functions
+                                  OutlinedIconButton(
+                                      function: () {},
+                                      icon: FontAwesomeIcons.facebook,
+                                      color: Colors.blueAccent),
+                                  OutlinedIconButton(
+                                    function: () {},
+                                    icon: FontAwesomeIcons.google,
+                                    color: Colors.red,
+                                  ),
+                                  OutlinedIconButton(
+                                    function: () {},
+                                    icon: FontAwesomeIcons.apple,
+                                    color: Colors.grey[500],
+                                  ),
+                                  OutlinedIconButton(
+                                    function: () {},
+                                    icon: FontAwesomeIcons.twitter,
+                                    color: Colors.blue,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 30),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        //TODO: Login Button
+                                        RouterServices.router
+                                            .goNamed("recipes");
+                                      },
+                                      child: Text(
+                                        "Login",
+                                        style: TextStyle(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      style: ButtonStyle(
+                                          minimumSize: MaterialStatePropertyAll(
+                                              Size(0, 60))),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          SizedBox(height: 20),
-                          TextFormField(
-                            controller: loginController,
-                            decoration: InputDecoration(
-                                label: Text(
-                                  "Login",
-                                  style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                border: OutlineInputBorder()),
-                          ),
-                          SizedBox(height: 10),
-                          TextFormField(
-                            controller: mailController,
-                            decoration: InputDecoration(
-                                label: Text(
-                                  "Mail",
-                                  style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                border: OutlineInputBorder()),
-                          ),
-                          SizedBox(height: 10),
-                          TextFormField(
-                            controller: passwordController,
-                            decoration: InputDecoration(
-                                label: Text(
-                                  "Password",
-                                  style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                border: OutlineInputBorder(),
-                                suffixIcon: IconButton(
-                                  icon: Icon(Icons.visibility),
-                                  onPressed: () {
-                                    //TODO: Visibility Password
-                                  },
-                                )),
-                          ),
-                          SizedBox(height: 20),
-                          Text("OR",
-                              style: TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w600,
-                                  color: ColorsCustom.grey)),
-                          SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              //TODO: Login Functions
-                              OutlinedIconButton(
-                                  function: () {},
-                                  icon: FontAwesomeIcons.facebook,
-                                  color: Colors.blueAccent),
-                              OutlinedIconButton(
-                                function: () {},
-                                icon: FontAwesomeIcons.google,
-                                color: Colors.red,
-                              ),
-                              OutlinedIconButton(
-                                function: () {},
-                                icon: FontAwesomeIcons.apple,
-                                color: Colors.grey[500],
-                              ),
-                              OutlinedIconButton(
-                                function: () {},
-                                icon: FontAwesomeIcons.twitter,
-                                color: Colors.blue,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    //TODO: Login Button
-                                  },
-                                  child: Text(
-                                    "Login",
-                                    style: TextStyle(
-                                        fontSize: 19,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  style: ButtonStyle(
-                                      minimumSize: MaterialStatePropertyAll(
-                                          Size(0, 60))),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ],
-    ));
+            ),
+          ],
+        ));
   }
 }
 

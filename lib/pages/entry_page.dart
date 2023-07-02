@@ -29,6 +29,7 @@ class _EntryPageState extends ConsumerState<EntryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       body: Stack(
         children: [
           PageView(
@@ -63,7 +64,7 @@ class _EntryPageState extends ConsumerState<EntryPage> {
               SmoothPageIndicator(
                 controller: pageController,
                 count: 4,
-                effect: WormEffect(activeDotColor: Colors.green),
+                effect: WormEffect(activeDotColor: Colors.green[800]!),
               ),
               SizedBox(height: 30)
             ],
@@ -131,7 +132,7 @@ class _EntryPageButtonState extends ConsumerState<EntryPageButton> {
                           TextSpan(
                               text: "Delicious",
                               style: TextStyle(
-                                  color: Colors.green[600],
+                                  color: Colors.green[800],
                                   fontWeight: FontWeight.w900)),
                           TextSpan(text: "!")
                         ],
