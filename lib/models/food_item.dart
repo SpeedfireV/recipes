@@ -4,6 +4,7 @@ class FoodItem {
   final String image;
   final int rating;
   final int time;
+  final String category;
   final List<String> ingredients;
   final List<String> steps;
   FoodItem(
@@ -12,6 +13,7 @@ class FoodItem {
       required this.image,
       required this.rating,
       required this.time,
+      required this.category,
       required this.ingredients,
       required this.steps});
 }

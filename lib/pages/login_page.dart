@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sports/constants/colors.dart';
 import 'package:sports/constants/images.dart';
+import 'package:sports/services/auth.dart';
+import 'package:sports/services/item_page.dart';
 import 'package:sports/services/router.dart';
 
 class LoginPage extends StatefulHookConsumerWidget {
@@ -20,9 +23,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final mailController = useTextEditingController();
-    final loginController = useTextEditingController();
     final passwordController = useTextEditingController();
 
+    final mailNode = useFocusNode();
+    final passwordNode = useFocusNode();
+
+    bool visible = ref.watch(passwordVisible);
     return Scaffold(
         backgroundColor: Colors.grey[200],
         body: Column(
@@ -65,19 +71,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             children: [
                               SizedBox(height: 20),
                               TextFormField(
-                                controller: loginController,
-                                decoration: InputDecoration(
-                                    label: Text(
-                                      "Login",
-                                      style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                    border: OutlineInputBorder()),
-                              ),
-                              SizedBox(height: 10),
-                              TextFormField(
+                                focusNode: mailNode,
                                 controller: mailController,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (!RegExp(
+                                          r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                      .hasMatch(value!)) {
+                                    return "Provide a Valid Mail";
+                                  }
+                                  return null;
+                                },
+                                onFieldSubmitted: (value) {
+                                  _formKey.currentState!.validate();
+                                  mailNode.nextFocus();
+                                },
+                                onEditingComplete: () {
+                                  _formKey.currentState!.validate();
+                                },
+                                onSaved: (value) {
+                                  _formKey.currentState!.validate();
+                                },
                                 decoration: InputDecoration(
                                     label: Text(
                                       "Mail",
@@ -89,6 +103,25 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ),
                               SizedBox(height: 10),
                               TextFormField(
+                                keyboardType: TextInputType.visiblePassword,
+                                focusNode: passwordNode,
+                                onFieldSubmitted: (value) {
+                                  _formKey.currentState!.validate();
+                                  mailNode.nextFocus();
+                                },
+                                onEditingComplete: () {
+                                  _formKey.currentState!.validate();
+                                },
+                                onSaved: (value) {
+                                  _formKey.currentState!.validate();
+                                },
+                                validator: (value) {
+                                  if (value!.length <= 5) {
+                                    return "Password Must Be At Least 5 Characters Long";
+                                  }
+                                  return null;
+                                },
+                                obscureText: !visible,
                                 controller: passwordController,
                                 decoration: InputDecoration(
                                     label: Text(
@@ -99,9 +132,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     ),
                                     border: OutlineInputBorder(),
                                     suffixIcon: IconButton(
-                                      icon: Icon(Icons.visibility),
+                                      color: ColorsCustom.lightGreen,
+                                      icon: Icon(visible
+                                          ? Icons.visibility
+                                          : Icons.visibility_off),
                                       onPressed: () {
                                         //TODO: Visibility Password
+                                        ref
+                                            .read(passwordVisible.notifier)
+                                            .state = !visible;
                                       },
                                     )),
                               ),
@@ -122,7 +161,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       icon: FontAwesomeIcons.facebook,
                                       color: Colors.blueAccent),
                                   OutlinedIconButton(
-                                    function: () {},
+                                    function: () async {
+                                      final google = await AuthService()
+                                          .signInWithGoogle();
+                                      debugPrint(google);
+                                      if (google != null) {
+                                        RouterServices.router
+                                            .goNamed("recipes");
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                                backgroundColor:
+                                                    ColorsCustom.darkGrey,
+                                                content: Center(
+                                                  child: Text(
+                                                    "Login unsuccessful",
+                                                    style: TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        color:
+                                                            ColorsCustom.white),
+                                                  ),
+                                                )));
+                                      }
+                                    },
                                     icon: FontAwesomeIcons.google,
                                     color: Colors.red,
                                   ),
@@ -143,10 +206,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 children: [
                                   Expanded(
                                     child: ElevatedButton(
-                                      onPressed: () {
+                                      onPressed: () async {
                                         //TODO: Login Button
-                                        RouterServices.router
-                                            .goNamed("recipes");
+                                        if (_formKey.currentState!.validate()) {
+                                          RouterServices.router
+                                              .goNamed("recipes");
+                                          try {
+                                            await FirebaseAuth.instance
+                                                .createUserWithEmailAndPassword(
+                                                    email: mailController.text
+                                                        .trim(),
+                                                    password: passwordController
+                                                        .text
+                                                        .trim());
+                                          } on FirebaseAuthException catch (e) {
+                                            await FirebaseAuth.instance
+                                                .signInWithEmailAndPassword(
+                                                    email: mailController.text
+                                                        .trim(),
+                                                    password: passwordController
+                                                        .text
+                                                        .trim());
+                                          }
+                                        }
                                       },
                                       child: Text(
                                         "Login",

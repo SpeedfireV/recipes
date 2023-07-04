@@ -6,6 +6,7 @@ import 'package:sports/constants/images.dart';
 import 'package:sports/functions/time.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/login_page.dart';
+import 'package:sports/services/router.dart';
 
 class RecipesPage extends ConsumerStatefulWidget {
   const RecipesPage({super.key});
@@ -23,7 +24,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
           children: [
             Column(
               children: [
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -32,7 +33,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                       padding: const EdgeInsets.only(left: 8.0),
                       child: IconButton(
                           onPressed: () {},
-                          icon: Icon(FontAwesomeIcons.barsStaggered)),
+                          icon: const Icon(FontAwesomeIcons.barsStaggered)),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(right: 16.0),
@@ -41,7 +42,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                     )
                   ],
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
@@ -55,13 +56,13 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                                   fontWeight: FontWeight.w500,
                                   fontSize: 16,
                                   color: Colors.grey[600])),
-                          TextSpan(
+                          const TextSpan(
                               text: "Easy to cook menu",
                               style: TextStyle(
                                   fontWeight: FontWeight.w800, fontSize: 24))
                         ], style: TextStyle(color: ColorsCustom.darkGrey)),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
                           Expanded(
@@ -72,17 +73,17 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                                         borderRadius:
                                             BorderRadius.circular(24))),
                                 alignment: Alignment.centerLeft,
-                                minimumSize:
-                                    MaterialStatePropertyAll(Size(0, 60))),
+                                minimumSize: const MaterialStatePropertyAll(
+                                    Size(0, 60))),
                             onPressed: () {},
-                            icon: Padding(
+                            icon: const Padding(
                               padding: EdgeInsets.only(right: 8, left: 8),
                               child: Icon(
                                 FontAwesomeIcons.utensils,
                                 size: 28,
                               ),
                             ),
-                            label: Text(
+                            label: const Text(
                               "Find Dish By Ingredients",
                               style: TextStyle(
                                   fontWeight: FontWeight.w600, fontSize: 17),
@@ -90,7 +91,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                           ))
                         ],
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Text(
                         "Category",
                         style: TextStyle(
@@ -98,7 +99,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                             fontWeight: FontWeight.w600,
                             color: ColorsCustom.darkGrey),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       SizedBox(
                         height: 50,
                         child: ListView.separated(
@@ -109,10 +110,10 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                               index: index),
                           itemCount: 2,
                           separatorBuilder: (context, index) =>
-                              SizedBox(width: 12),
+                              const SizedBox(width: 12),
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       GridView.count(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
@@ -124,16 +125,27 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                           FoodItemElement(
                               item: FoodItem(
                                   name: "Bacon & Eggs",
-                                  description: "Delicious",
+                                  description:
+                                      "Ut cillum occaecat ad veniam magna cupidatat duis culpa duis consequat esse do. Irure nostrud consectetur occaecat proident ex duis elit sunt culpa ut dolor. Aliquip sint cupidatat ut et enim sunt exercitation proident aliqua tempor. Culpa adipisicing non qui id. In magna sunt exercitation amet id dolor ad id. Ex anim anim eu cupidatat anim et. Irure ea ipsum culpa commodo sit ad voluptate aliquip eiusmod dolor excepteur quis.",
+                                  category: "breakfast",
                                   image: Images.baconEggs,
                                   rating: 45,
                                   time: 1800,
-                                  ingredients: [],
-                                  steps: [])),
+                                  ingredients: [
+                                "Find a Pan",
+                                "Crack an egg",
+                                "Fry the bacon"
+                              ],
+                                  steps: [
+                                "Bacon",
+                                "2 Eggs",
+                                "Oil"
+                              ])),
                           FoodItemElement(
                               item: FoodItem(
                                   name: "Bacon & Eggs",
                                   description: "Delicious",
+                                  category: "breakfast",
                                   image: Images.baconEggs,
                                   rating: 45,
                                   time: 900,
@@ -143,6 +155,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                               item: FoodItem(
                                   name: "Bacon & Eggs",
                                   description: "Delicious",
+                                  category: "breakfast",
                                   image: Images.baconEggs,
                                   rating: 45,
                                   time: 900,
@@ -152,6 +165,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                               item: FoodItem(
                                   name: "Bacon & Eggs",
                                   description: "Delicious",
+                                  category: "breakfast",
                                   image: Images.baconEggs,
                                   rating: 45,
                                   time: 900,
@@ -159,8 +173,14 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                                   steps: [])),
                         ],
                       ),
-                      TextButton(onPressed: () {}, child: Text("See All")),
-                      SizedBox(height: 40)
+                      TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                            "See All",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          )),
+                      const SizedBox(height: 40)
                     ],
                   ),
                 ),
@@ -192,7 +212,7 @@ class _CategoryButtonState extends ConsumerState<CategoryButton> {
         style: ButtonStyle(
             backgroundColor: widget.activated
                 ? null
-                : MaterialStatePropertyAll(Colors.white),
+                : const MaterialStatePropertyAll(Colors.white),
             shape: MaterialStatePropertyAll(RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24)))),
         onPressed: () {},
@@ -223,7 +243,9 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
       borderRadius: BorderRadius.circular(10),
       elevation: 5,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          RouterServices.router.pushNamed("recipe", extra: item);
+        },
         child: Ink(
           decoration: BoxDecoration(
               color: Colors.white, borderRadius: BorderRadius.circular(10)),
@@ -232,14 +254,14 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image(width: 120, image: AssetImage(item.image)),
                     ],
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text(
                     item.name,
                     style: TextStyle(
@@ -247,7 +269,7 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                         color: ColorsCustom.darkGrey,
                         fontSize: 17),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -257,8 +279,8 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                             color: ColorsCustom.grey,
                             fontWeight: FontWeight.w500),
                       ),
-                      SizedBox(width: 4),
-                      Icon(
+                      const SizedBox(width: 4),
+                      const Icon(
                         Icons.star,
                         color: Colors.amber,
                         size: 20,
@@ -275,6 +297,16 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                   )
                 ],
               ),
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.favorite,
+                    color: Colors.green[800],
+                  ),
+                  onPressed: () {},
+                ),
+              )
             ],
           ),
         ),
