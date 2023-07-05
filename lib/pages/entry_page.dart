@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:sports/constants/images.dart';
+import 'package:sports/services/local_database.dart';
 import 'package:sports/services/router.dart';
 
 class EntryPage extends ConsumerStatefulWidget {
@@ -163,7 +164,11 @@ class _EntryPageButtonState extends ConsumerState<EntryPageButton> {
                         minimumSize: MaterialStatePropertyAll(Size(0, 60))),
                     onPressed: () {
                       widget.last == true
-                          ? RouterServices.router.goNamed("login")
+                          ? {
+                              DatabaseServices.addToBox().then((value) {
+                                RouterServices.router.goNamed("login");
+                              }),
+                            }
                           : widget.controller.nextPage(
                               duration: Duration(milliseconds: 300),
                               curve: Curves.ease);
@@ -191,7 +196,9 @@ class _EntryPageButtonState extends ConsumerState<EntryPageButton> {
                               minimumSize:
                                   MaterialStatePropertyAll(Size(0, 60))),
                           onPressed: () {
-                            RouterServices.router.goNamed("recipes");
+                            DatabaseServices.addToBox().then((value) {
+                              RouterServices.router.goNamed("recipes");
+                            });
                           },
                           child: Text(
                             "Skip",

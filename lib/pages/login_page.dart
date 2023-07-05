@@ -9,6 +9,7 @@ import 'package:sports/constants/images.dart';
 import 'package:sports/services/auth.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/router.dart';
+import 'package:sports/widgets/problem_snackbar.dart';
 
 class LoginPage extends StatefulHookConsumerWidget {
   const LoginPage({super.key});
@@ -28,7 +29,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final mailNode = useFocusNode();
     final passwordNode = useFocusNode();
 
-    bool visible = ref.watch(passwordVisible);
+    bool visible = ref.watch(passwordVisibleProvider);
+    ref.watch(loggedInProvider);
     return Scaffold(
         backgroundColor: Colors.grey[200],
         body: Column(
@@ -48,8 +50,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 16.0),
                                   child: IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(Icons.arrow_back)),
+                                      onPressed: () {
+                                        RouterServices.router
+                                            .goNamed("recipes");
+                                      },
+                                      icon: Icon(Icons.close)),
                                 ),
                                 Align(
                                   alignment: Alignment.center,
@@ -96,7 +101,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     label: Text(
                                       "Mail",
                                       style: TextStyle(
-                                          fontSize: 17,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.w500),
                                     ),
                                     border: OutlineInputBorder()),
@@ -127,7 +132,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     label: Text(
                                       "Password",
                                       style: TextStyle(
-                                          fontSize: 17,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.w500),
                                     ),
                                     border: OutlineInputBorder(),
@@ -139,69 +144,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       onPressed: () {
                                         //TODO: Visibility Password
                                         ref
-                                            .read(passwordVisible.notifier)
+                                            .read(passwordVisibleProvider
+                                                .notifier)
                                             .state = !visible;
                                       },
                                     )),
                               ),
-                              SizedBox(height: 10),
-                              Text("OR",
-                                  style: TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w600,
-                                      color: ColorsCustom.darkGrey)),
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  //TODO: Login Functions
-                                  OutlinedIconButton(
-                                      function: () {},
-                                      icon: FontAwesomeIcons.facebook,
-                                      color: Colors.blueAccent),
-                                  OutlinedIconButton(
-                                    function: () async {
-                                      final google = await AuthService()
-                                          .signInWithGoogle();
-                                      debugPrint(google);
-                                      if (google != null) {
-                                        RouterServices.router
-                                            .goNamed("recipes");
-                                      } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                backgroundColor:
-                                                    ColorsCustom.darkGrey,
-                                                content: Center(
-                                                  child: Text(
-                                                    "Login unsuccessful",
-                                                    style: TextStyle(
-                                                        fontSize: 17,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        color:
-                                                            ColorsCustom.white),
-                                                  ),
-                                                )));
-                                      }
-                                    },
-                                    icon: FontAwesomeIcons.google,
-                                    color: Colors.red,
-                                  ),
-                                  OutlinedIconButton(
-                                    function: () {},
-                                    icon: FontAwesomeIcons.apple,
-                                    color: Colors.grey[500],
-                                  ),
-                                  OutlinedIconButton(
-                                    function: () {},
-                                    icon: FontAwesomeIcons.twitter,
-                                    color: Colors.blue,
-                                  ),
-                                ],
+                              SizedBox(
+                                height: 20,
                               ),
-                              SizedBox(height: 30),
                               Row(
                                 children: [
                                   Expanded(
@@ -209,8 +160,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       onPressed: () async {
                                         //TODO: Login Button
                                         if (_formKey.currentState!.validate()) {
-                                          RouterServices.router
-                                              .goNamed("recipes");
                                           try {
                                             await FirebaseAuth.instance
                                                 .createUserWithEmailAndPassword(
@@ -228,12 +177,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                                         .text
                                                         .trim());
                                           }
+                                          ref
+                                              .read(loggedInProvider.notifier)
+                                              .state = true;
+                                          RouterServices.router
+                                              .goNamed("recipes");
                                         }
                                       },
                                       child: Text(
                                         "Login",
                                         style: TextStyle(
-                                            fontSize: 19,
+                                            fontSize: 18,
                                             fontWeight: FontWeight.w600),
                                       ),
                                       style: ButtonStyle(
@@ -243,8 +197,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   ),
                                 ],
                               ),
-                              SizedBox(
-                                height: 20,
+                              SizedBox(height: 20),
+                              Text("OR",
+                                  style: TextStyle(
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.w600,
+                                      color: ColorsCustom.darkGrey)),
+                              SizedBox(height: 20),
+                              OutlinedIconButton(
+                                function: () async {
+                                  final google =
+                                      await AuthService.signInWithGoogle();
+                                  if (google != null) {
+                                    ref.read(loggedInProvider.notifier).state =
+                                        true;
+                                    RouterServices.router.goNamed("recipes");
+                                  } else {
+                                    showProblemSnackbar(
+                                        "Login Unsuccessful", context);
+                                  }
+                                },
+                                icon: FontAwesomeIcons.google,
+                                color: Colors.red,
+                                text: "Continue With Google",
                               ),
                             ],
                           ),
@@ -262,10 +237,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
 class OutlinedIconButton extends ConsumerStatefulWidget {
   const OutlinedIconButton(
-      {super.key, required this.function, required this.icon, this.color});
+      {super.key,
+      required this.function,
+      required this.icon,
+      this.color,
+      this.text});
   final VoidCallback function;
   final IconData icon;
   final Color? color;
+  final String? text;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -281,14 +261,32 @@ class _OutlinedIconButtonState extends ConsumerState<OutlinedIconButton> {
       child: Ink(
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey[500]!)),
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Icon(
-            widget.icon,
-            color: widget.color ?? Colors.grey[700]!,
-          ),
-        ),
+            border: Border.all(color: Colors.grey[500]!, width: 1)),
+        child: widget.text == null
+            ? Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Icon(
+                  widget.icon,
+                  color: widget.color ?? Colors.grey[700]!,
+                ))
+            : Row(
+                children: [
+                  Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Icon(
+                        widget.icon,
+                        color: widget.color ?? Colors.grey[700]!,
+                      )),
+                  Text(
+                    widget.text!,
+                    style: TextStyle(
+                        color: ColorsCustom.darkGrey,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  Expanded(child: Container())
+                ],
+              ),
       ),
     );
   }

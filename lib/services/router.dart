@@ -2,13 +2,21 @@ import 'package:go_router/go_router.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/entry_page.dart';
 import 'package:sports/pages/recipes_page.dart';
+import 'package:sports/services/local_database.dart';
 
 import '../pages/item_page.dart';
 import '../pages/login_page.dart';
 
 class RouterServices {
   static final router = GoRouter(routes: [
-    GoRoute(path: "/", builder: (context, state) => const EntryPage()),
+    GoRoute(
+        path: "/",
+        builder: (context, state) {
+          if (DatabaseServices.appLaunched()) {
+            return RecipesPage();
+          }
+          return EntryPage();
+        }),
     GoRoute(
         path: "/recipes",
         name: "recipes",

@@ -1,3 +1,6 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -6,6 +9,8 @@ import 'package:sports/constants/images.dart';
 import 'package:sports/functions/time.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/login_page.dart';
+import 'package:sports/services/auth.dart';
+import 'package:sports/services/item_page.dart';
 import 'package:sports/services/router.dart';
 
 class RecipesPage extends ConsumerStatefulWidget {
@@ -18,6 +23,7 @@ class RecipesPage extends ConsumerStatefulWidget {
 class _RecipesPageState extends ConsumerState<RecipesPage> {
   @override
   Widget build(BuildContext context) {
+    bool loggedIn = ref.watch(loggedInProvider);
     return Scaffold(
         backgroundColor: Colors.grey[200],
         body: ListView(
@@ -38,7 +44,54 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 16.0),
                       child: OutlinedIconButton(
-                          function: () {}, icon: FontAwesomeIcons.user),
+                          function: () {
+                            if (loggedIn) {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                        icon: Icon(FontAwesomeIcons.envelope),
+                                        title: Text(
+                                          AuthService.currentMail(),
+                                        ),
+                                        content: Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child:
+                                              Text("You are going to log out."),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                RouterServices.router.pop();
+                                              },
+                                              child: Text(
+                                                "Cancel",
+                                                style: TextStyle(
+                                                    color: ColorsCustom.grey),
+                                              )),
+                                          TextButton(
+                                              onPressed: () {
+                                                FirebaseAuth.instance.signOut();
+                                                ref
+                                                    .read(loggedInProvider
+                                                        .notifier)
+                                                    .state = false;
+                                                RouterServices.router.pop();
+                                              },
+                                              child: Text(
+                                                "Log Out",
+                                                style: TextStyle(
+                                                    color: Colors.red),
+                                              )),
+                                        ],
+                                      ));
+                            } else {
+                              RouterServices.router.pushNamed("login");
+                            }
+                          },
+                          icon: loggedIn
+                              ? FontAwesomeIcons.rightFromBracket
+                              : FontAwesomeIcons.user),
                     )
                   ],
                 ),
