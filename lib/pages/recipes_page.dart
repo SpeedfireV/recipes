@@ -13,6 +13,8 @@ import 'package:sports/services/auth.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/router.dart';
 
+import '../widgets/elevated_button.dart';
+
 class RecipesPage extends ConsumerStatefulWidget {
   const RecipesPage({super.key});
 
@@ -116,34 +118,11 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                         ], style: TextStyle(color: ColorsCustom.darkGrey)),
                       ),
                       const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                              child: ElevatedButton.icon(
-                            style: ButtonStyle(
-                                shape: MaterialStatePropertyAll(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(24))),
-                                alignment: Alignment.centerLeft,
-                                minimumSize: const MaterialStatePropertyAll(
-                                    Size(0, 60))),
-                            onPressed: () {},
-                            icon: const Padding(
-                              padding: EdgeInsets.only(right: 8, left: 8),
-                              child: Icon(
-                                FontAwesomeIcons.utensils,
-                                size: 28,
-                              ),
-                            ),
-                            label: const Text(
-                              "Find Dish By Ingredients",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 17),
-                            ),
-                          ))
-                        ],
-                      ),
+                      CustomElevatedButton(
+                        icon: FontAwesomeIcons.utensils,
+                          function: () =>
+                              RouterServices.router.pushNamed("ingredients"),
+                          text: "Find Dish By Ingredients"),
                       const SizedBox(height: 20),
                       Text(
                         "Category",
