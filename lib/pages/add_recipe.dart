@@ -1,3 +1,4 @@
+import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,10 +20,16 @@ class AddRecipePage extends StatefulHookConsumerWidget {
 
 class _AddRecipePageState extends ConsumerState<AddRecipePage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    final node = useFocusNode();
+    final nameNode = useFocusNode();
+    final descriptionNode = useFocusNode();
+    final timeNode = useFocusNode();
+    final categoryNode = useFocusNode();
+    final ingredientsNode = useFocusNode();
+    final recipeNode = useFocusNode();
     return Scaffold(
       backgroundColor: ColorsCustom.background,
       body: Form(
@@ -58,12 +65,16 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                   physics: NeverScrollableScrollPhysics(),
                   children: [
                     TextFormField(
-                      focusNode: node,
+                      key: _nameKey,
+                      focusNode: nameNode,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return "Provide a Name";
                         }
                         return null;
+                      },
+                      onEditingComplete: () {
+                        nameNode.nextFocus();
                       },
                       decoration: InputDecoration(
                         label: Text("Name", style: Styles.inputStyle),
@@ -72,7 +83,23 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                     ),
                     SizedBox(height: 10),
                     TextFormField(
-                      focusNode: node,
+                      focusNode: recipeNode,
+                      maxLines: null,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Provide a Time";
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        label: Text("Recipe Description",
+                            style: Styles.inputStyle),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      focusNode: descriptionNode,
                       maxLines: null,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -91,7 +118,12 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                         Expanded(
                           flex: 7,
                           child: TextFormField(
-                            focusNode: node,
+                            focusNode: timeNode,
+                            onTap: () async {
+                              await showDurationPicker(
+                                  context: context,
+                                  initialTime: Duration(seconds: 10));
+                            },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return "Provide a Time";
@@ -109,10 +141,10 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                         Expanded(
                           flex: 6,
                           child: TextFormField(
-                            focusNode: node,
+                            focusNode: categoryNode,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return "Provide a Time";
+                                return "Choose Category";
                               }
                               return null;
                             },
@@ -126,34 +158,16 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       ],
                     ),
                     SizedBox(height: 10),
-                    TextFormField(
-                      focusNode: node,
-                      maxLines: null,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Provide a Time";
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        label: Text("Ingredients", style: Styles.inputStyle),
-                        border: OutlineInputBorder(),
-                      ),
+                    OutlinedIconButton(
+                      function: () {},
+                      icon: Icons.image,
+                      text: "Select Ingredients",
                     ),
                     SizedBox(height: 10),
-                    TextFormField(
-                      focusNode: node,
-                      maxLines: null,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Provide a Time";
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        label: Text("Recipe", style: Styles.inputStyle),
-                        border: OutlineInputBorder(),
-                      ),
+                    OutlinedIconButton(
+                      function: () {},
+                      icon: Icons.image,
+                      text: "Select Images",
                     ),
                   ],
                 ),
