@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sports/constants/colors.dart';
 import 'package:sports/constants/images.dart';
+import 'package:sports/constants/styles.dart';
 import 'package:sports/services/auth.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/router.dart';
@@ -98,12 +99,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   _formKey.currentState!.validate();
                                 },
                                 decoration: InputDecoration(
-                                    label: Text(
-                                      "Mail",
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                    ),
+                                    label:
+                                        Text("Mail", style: Styles.inputStyle),
                                     border: OutlineInputBorder()),
                               ),
                               SizedBox(height: 10),
@@ -129,12 +126,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 obscureText: !visible,
                                 controller: passwordController,
                                 decoration: InputDecoration(
-                                    label: Text(
-                                      "Password",
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                    ),
+                                    label: Text("Password",
+                                        style: Styles.inputStyle),
                                     border: OutlineInputBorder(),
                                     suffixIcon: IconButton(
                                       color: ColorsCustom.lightGreen,

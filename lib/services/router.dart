@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:sports/models/food_item.dart';
+import 'package:sports/pages/add_recipe.dart';
 import 'package:sports/pages/entry_page.dart';
 import 'package:sports/pages/find_by_ingredient.dart';
 import 'package:sports/pages/recipes_page.dart';
@@ -22,6 +23,10 @@ class RouterServices {
         path: "/recipes",
         name: "recipes",
         builder: (context, state) => const RecipesPage()),
+    GoRoute(
+        path: "/addRecipe",
+        name: "addRecipe",
+        builder: (context, state) => const AddRecipePage()),
     GoRoute(
         path: "/ingredients",
         name: "ingredients",

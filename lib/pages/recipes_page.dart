@@ -1,6 +1,4 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -50,43 +48,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                             if (loggedIn) {
                               showDialog(
                                   context: context,
-                                  builder: (context) => AlertDialog(
-                                        icon: Icon(FontAwesomeIcons.envelope),
-                                        title: Text(
-                                          AuthService.currentMail(),
-                                        ),
-                                        content: Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
-                                          child:
-                                              Text("You are going to log out."),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                RouterServices.router.pop();
-                                              },
-                                              child: Text(
-                                                "Cancel",
-                                                style: TextStyle(
-                                                    color: ColorsCustom.grey),
-                                              )),
-                                          TextButton(
-                                              onPressed: () {
-                                                FirebaseAuth.instance.signOut();
-                                                ref
-                                                    .read(loggedInProvider
-                                                        .notifier)
-                                                    .state = false;
-                                                RouterServices.router.pop();
-                                              },
-                                              child: Text(
-                                                "Log Out",
-                                                style: TextStyle(
-                                                    color: Colors.red),
-                                              )),
-                                        ],
-                                      ));
+                                  builder: (context) => const LogOutDialog());
                             } else {
                               RouterServices.router.pushNamed("login");
                             }
@@ -119,7 +81,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                       ),
                       const SizedBox(height: 10),
                       CustomElevatedButton(
-                        icon: FontAwesomeIcons.utensils,
+                          icon: FontAwesomeIcons.utensils,
                           function: () =>
                               RouterServices.router.pushNamed("ingredients"),
                           text: "Find Dish By Ingredients"),
@@ -343,6 +305,59 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class LogOutDialog extends ConsumerStatefulWidget {
+  const LogOutDialog({super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _LogOutDialogState();
+}
+
+class _LogOutDialogState extends ConsumerState<LogOutDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: Icon(FontAwesomeIcons.envelope),
+      title: Text(
+        AuthService.currentMail(),
+      ),
+      content: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Text("You are going to log out."),
+      ),
+      actions: [
+        // TODO:Admin Add Recipe Page
+        true
+            ? TextButton(
+                child: Text("Add Recipe"),
+                onPressed: () {
+                  RouterServices.router.pop();
+                  RouterServices.router.pushNamed("addRecipe");
+                },
+              )
+            : Container(),
+        TextButton(
+            onPressed: () {
+              RouterServices.router.pop();
+            },
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: ColorsCustom.grey),
+            )),
+        TextButton(
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+              ref.read(loggedInProvider.notifier).state = false;
+              RouterServices.router.pop();
+            },
+            child: Text(
+              "Log Out",
+              style: TextStyle(color: Colors.red),
+            )),
+      ],
     );
   }
 }

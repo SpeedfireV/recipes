@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sports/constants/colors.dart';
-import 'package:sports/pages/login_page.dart';
+import 'package:sports/services/ingredients_page.dart';
 import 'package:sports/services/router.dart';
 import 'package:sports/widgets/elevated_button.dart';
 
@@ -18,6 +17,8 @@ class ByIngredientPage extends StatefulHookConsumerWidget {
 class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
   @override
   Widget build(BuildContext context) {
+    String ingredientsSearch = ref.watch(ingredientsSearchProvider);
+    List<String> selectedIngredients = ref.watch(selectedIngredientsProvider);
     return Scaffold(
       backgroundColor: ColorsCustom.background,
       appBar: AppBar(
@@ -28,6 +29,9 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
           },
         ),
         title: SearchBar(
+          onChanged: (value) {
+            ref.read(ingredientsSearchProvider.notifier).state = value;
+          },
           hintText: "Find Your Ingredients",
           leading: Padding(
             padding: const EdgeInsets.only(left: 8.0),
@@ -41,7 +45,7 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
       ),
       body: Stack(children: [
         ListView.builder(
-          shrinkWrap: true,
+          shrinkWrap: false,
           itemBuilder: (context, index) => ListTile(
             onTap: () {},
             selected: false,
@@ -58,6 +62,7 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
                 icon: Icons.search,
                 function: () {},
                 text: "Search For Recipes",
+                disabled: selectedIngredients.isEmpty,
               ),
             ))
       ]),

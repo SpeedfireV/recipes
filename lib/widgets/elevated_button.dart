@@ -8,11 +8,13 @@ class CustomElevatedButton extends ConsumerStatefulWidget {
       required this.function,
       required this.text,
       this.center,
-      required this.icon});
+      required this.icon,
+      this.disabled});
   final Function function;
   final String text;
   final IconData icon;
   final bool? center;
+  final bool? disabled;
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
       _CustomElevatedButtonState();
@@ -32,9 +34,11 @@ class _CustomElevatedButtonState extends ConsumerState<CustomElevatedButton> {
                   ? Alignment.center
                   : Alignment.centerLeft,
               minimumSize: const MaterialStatePropertyAll(Size(0, 60))),
-          onPressed: () {
-            widget.function.call();
-          },
+          onPressed: widget.disabled == true
+              ? null
+              : () {
+                  widget.function.call();
+                },
           icon: Padding(
             padding: EdgeInsets.only(right: 8, left: 8),
             child: Icon(
