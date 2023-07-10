@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sports/firebase_options.dart';
+import 'package:sports/services/auth.dart';
+import 'package:sports/services/firebase.dart';
 import 'package:sports/services/router.dart';
 
 void main() async {
@@ -10,6 +12,9 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Hive.initFlutter();
   await Hive.openBox("launch");
+  if (AuthService.loggedIn() && !(await FirestoreServices().profileCreated())) {
+    AuthService.logOut();
+  }
   runApp(const ProviderScope(child: MainApp()));
 }
 

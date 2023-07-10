@@ -8,6 +8,7 @@ import 'package:sports/functions/time.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/login_page.dart';
 import 'package:sports/services/auth.dart';
+import 'package:sports/services/firebase.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/router.dart';
 
@@ -24,8 +25,11 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
   @override
   Widget build(BuildContext context) {
     bool loggedIn = ref.watch(loggedInProvider);
+    final GlobalKey<ScaffoldState> _key = GlobalKey();
+
     return Scaffold(
-        backgroundColor: Colors.grey[200],
+        drawer: Drawer(child: Text("Working")),
+        backgroundColor: ColorsCustom.background,
         body: ListView(
           children: [
             Column(
@@ -36,19 +40,22 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(FontAwesomeIcons.barsStaggered)),
-                    ),
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Builder(
+                          builder: (context) => IconButton(
+                              onPressed: () {
+                                Scaffold.of(context).openDrawer();
+                              },
+                              icon: const Icon(FontAwesomeIcons.barsStaggered)),
+                        )),
                     Padding(
                       padding: const EdgeInsets.only(right: 16.0),
                       child: OutlinedIconButton(
-                          function: () {
+                          function: () async {
                             if (loggedIn) {
                               showDialog(
                                   context: context,
-                                  builder: (context) => const LogOutDialog());
+                                  builder: (context) => LogOutDialog());
                             } else {
                               RouterServices.router.pushNamed("login");
                             }
@@ -311,7 +318,6 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
 
 class LogOutDialog extends ConsumerStatefulWidget {
   const LogOutDialog({super.key});
-
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _LogOutDialogState();
 }
@@ -330,33 +336,52 @@ class _LogOutDialogState extends ConsumerState<LogOutDialog> {
       ),
       actions: [
         // TODO:Admin Add Recipe Page
-        true
-            ? TextButton(
-                child: Text("Add Recipe"),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FutureBuilder(
+                future: FirestoreServices().isAdmin(),
+                builder: (context, snapshot) {
+                  debugPrint(snapshot.data.toString() + " abcdefg");
+                  if (snapshot.hasError) {
+                    return Container();
+                  }
+                  if (snapshot.connectionState == ConnectionState.done &&
+                      snapshot.data!) {
+                    debugPrint("seems to work");
+                    return TextButton(
+                      child: Text("Add Recipe"),
+                      onPressed: () {
+                        RouterServices.router.pop();
+                        RouterServices.router.pushNamed("addRecipe");
+                      },
+                    );
+                  }
+                  if (snapshot.connectionState == ConnectionState.active) {
+                    return Container();
+                  }
+                  return Container();
+                }),
+            TextButton(
                 onPressed: () {
                   RouterServices.router.pop();
-                  RouterServices.router.pushNamed("addRecipe");
                 },
-              )
-            : Container(),
-        TextButton(
-            onPressed: () {
-              RouterServices.router.pop();
-            },
-            child: Text(
-              "Cancel",
-              style: TextStyle(color: ColorsCustom.grey),
-            )),
-        TextButton(
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-              ref.read(loggedInProvider.notifier).state = false;
-              RouterServices.router.pop();
-            },
-            child: Text(
-              "Log Out",
-              style: TextStyle(color: Colors.red),
-            )),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(color: ColorsCustom.grey),
+                )),
+            TextButton(
+                onPressed: () {
+                  AuthService.logOut();
+                  ref.read(loggedInProvider.notifier).state = false;
+                  RouterServices.router.pop();
+                },
+                child: Text(
+                  "Log Out",
+                  style: TextStyle(color: Colors.red),
+                )),
+          ],
+        ),
       ],
     );
   }

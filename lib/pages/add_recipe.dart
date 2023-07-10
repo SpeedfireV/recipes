@@ -1,15 +1,25 @@
+import 'dart:io';
+
 import 'package:duration_picker/duration_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sports/constants/colors.dart';
+import 'package:sports/functions/time.dart';
+import 'package:sports/models/recipe.dart';
 import 'package:sports/pages/login_page.dart';
+import 'package:sports/services/firebase.dart';
 import 'package:sports/services/router.dart';
 import 'package:sports/widgets/elevated_button.dart';
+import 'package:sports/widgets/problem_snackbar.dart';
 
 import '../constants/styles.dart';
+import '../services/add_recipe_page.dart';
 
 class AddRecipePage extends StatefulHookConsumerWidget {
   const AddRecipePage({super.key});
@@ -30,6 +40,17 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
     final categoryNode = useFocusNode();
     final ingredientsNode = useFocusNode();
     final recipeNode = useFocusNode();
+
+    final nameController = useTextEditingController();
+    final recipeController = useTextEditingController();
+    final descriptionController = useTextEditingController();
+    final timeController = useTextEditingController();
+    final categoryController = useTextEditingController();
+
+    final currentCategory = ref.watch(categoryProvider);
+    final ingredients = ref.watch(selectedIngredientsProvider);
+    final estimatedTime = ref.watch(estimatedTimeProvider);
+    final images = ref.watch(selectedImagesProvider);
     return Scaffold(
       backgroundColor: ColorsCustom.background,
       body: Form(
@@ -65,6 +86,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                   physics: NeverScrollableScrollPhysics(),
                   children: [
                     TextFormField(
+                      controller: nameController,
                       key: _nameKey,
                       focusNode: nameNode,
                       validator: (value) {
@@ -73,6 +95,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                         }
                         return null;
                       },
+                      onChanged: (value) {},
                       onEditingComplete: () {
                         nameNode.nextFocus();
                       },
@@ -83,22 +106,23 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                     ),
                     SizedBox(height: 10),
                     TextFormField(
+                      controller: recipeController,
                       focusNode: recipeNode,
                       maxLines: null,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "Provide a Time";
+                          return "Provide a Recipe";
                         }
                         return null;
                       },
                       decoration: InputDecoration(
-                        label: Text("Recipe Description",
-                            style: Styles.inputStyle),
+                        label: Text("Recipe", style: Styles.inputStyle),
                         border: OutlineInputBorder(),
                       ),
                     ),
                     SizedBox(height: 10),
                     TextFormField(
+                      controller: descriptionController,
                       focusNode: descriptionNode,
                       maxLines: null,
                       validator: (value) {
@@ -113,59 +137,81 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 7,
-                          child: TextFormField(
-                            focusNode: timeNode,
-                            onTap: () async {
-                              await showDurationPicker(
-                                  context: context,
-                                  initialTime: Duration(seconds: 10));
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Provide a Time";
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                                label: Text("Estimated Time",
-                                    style: Styles.inputStyle),
-                                border: OutlineInputBorder(),
-                                suffixIcon: Icon(Icons.schedule)),
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          flex: 6,
-                          child: TextFormField(
-                            focusNode: categoryNode,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Choose Category";
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                                label:
-                                    Text("Category", style: Styles.inputStyle),
-                                border: OutlineInputBorder(),
-                                suffixIcon: Icon(Icons.category_outlined)),
-                          ),
-                        ),
-                      ],
+                    TextFormField(
+                      readOnly: true,
+                      controller: timeController,
+                      focusNode: timeNode,
+                      onTap: () async {
+                        Duration? time = await showDurationPicker(
+                            snapToMins: 0.05,
+                            context: context,
+                            initialTime: Duration(seconds: 10));
+                        if (time != null) {
+                          ref.read(estimatedTimeProvider.notifier).state =
+                              time.inSeconds;
+                          timeController.text = formatTime(time.inSeconds);
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Provide Time";
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                          label:
+                              Text("Estimated Time", style: Styles.inputStyle),
+                          border: OutlineInputBorder(),
+                          suffixIcon: Icon(Icons.schedule)),
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      readOnly: true,
+                      focusNode: categoryNode,
+                      controller: categoryController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Choose Category";
+                        }
+                        return null;
+                      },
+                      onTap: () {
+                        RouterServices.router.pushNamed("category",
+                            extra: [categoryController, "Find Category"]);
+                      },
+                      decoration: InputDecoration(
+                          label: Text("Category", style: Styles.inputStyle),
+                          border: OutlineInputBorder(),
+                          suffixIcon: Icon(Icons.category_outlined)),
                     ),
                     SizedBox(height: 10),
                     OutlinedIconButton(
-                      function: () {},
-                      icon: Icons.image,
+                      function: () {
+                        RouterServices.router.pushNamed("ingredients",
+                            extra: "Submit Ingredients");
+                      },
+                      icon: FontAwesomeIcons.bowlFood,
                       text: "Select Ingredients",
                     ),
                     SizedBox(height: 10),
                     OutlinedIconButton(
-                      function: () {},
+                      function: () async {
+                        late FilePickerResult? result;
+                        try {
+                          result = await FilePicker.platform
+                              .pickFiles(allowMultiple: true);
+                        } on PlatformException catch (e) {
+                          showProblemSnackbar(
+                              "You must give permission to choose files",
+                              context);
+                        }
+
+                        if (result != null) {
+                          ref
+                              .read(selectedImagesProvider.notifier)
+                              .addImages(result.files);
+                        }
+                      },
                       icon: Icons.image,
                       text: "Select Images",
                     ),
@@ -181,8 +227,25 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
               padding: const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
               child: CustomElevatedButton(
                 text: "Add Recipe",
-                function: () {
-                  _formKey.currentState!.validate();
+                function: () async {
+                  if (_formKey.currentState!.validate() &&
+                      ingredients.length != 0) {
+                    await FirestoreServices()
+                        .addRecipe(Recipe(
+                          name: nameController.text,
+                          recipe: recipeController.text,
+                          description: descriptionController.text,
+                          estimatedTime: estimatedTime,
+                          category: categoryController.text,
+                        ))
+                        .then((value) {});
+
+                    await StorageServices()
+                        .addRecipeImages(images, nameController.text);
+
+                    RouterServices.router.pop();
+                    // TODO: Add Recipe
+                  }
                 },
                 icon: Icons.add,
               ),

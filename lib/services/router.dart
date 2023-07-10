@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/add_recipe.dart';
+import 'package:sports/pages/category_picker.dart';
 import 'package:sports/pages/entry_page.dart';
 import 'package:sports/pages/find_by_ingredient.dart';
 import 'package:sports/pages/recipes_page.dart';
@@ -28,9 +30,22 @@ class RouterServices {
         name: "addRecipe",
         builder: (context, state) => const AddRecipePage()),
     GoRoute(
+        path: "/category",
+        name: "category",
+        builder: (context, state) {
+          List list = state.extra as List;
+          return PickerPage(
+            list[0] as TextEditingController,
+            list[1] as String,
+          );
+        }),
+    GoRoute(
         path: "/ingredients",
         name: "ingredients",
-        builder: (context, state) => const ByIngredientPage()),
+        builder: (context, state) {
+          String? customText = state.extra as String?;
+          return ByIngredientPage(text: customText);
+        }),
     GoRoute(
         path: "/login",
         name: "login",

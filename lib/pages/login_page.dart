@@ -151,24 +151,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   Expanded(
                                     child: ElevatedButton(
                                       onPressed: () async {
-                                        //TODO: Login Button
                                         if (_formKey.currentState!.validate()) {
                                           try {
-                                            await FirebaseAuth.instance
-                                                .createUserWithEmailAndPassword(
-                                                    email: mailController.text
-                                                        .trim(),
-                                                    password: passwordController
-                                                        .text
-                                                        .trim());
+                                            await AuthService.registerUser(
+                                                mailController.text,
+                                                passwordController.text);
                                           } on FirebaseAuthException catch (e) {
-                                            await FirebaseAuth.instance
-                                                .signInWithEmailAndPassword(
-                                                    email: mailController.text
-                                                        .trim(),
-                                                    password: passwordController
-                                                        .text
-                                                        .trim());
+                                            await AuthService.loginUser(
+                                                mailController.text,
+                                                passwordController.text);
                                           }
                                           ref
                                               .read(loggedInProvider.notifier)
