@@ -13,7 +13,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox("launch");
   if (AuthService.loggedIn() && !(await FirestoreServices().profileCreated())) {
-    AuthService.logOut();
+    await AuthService.logOut();
   }
   runApp(const ProviderScope(child: MainApp()));
 }

@@ -1,8 +1,4 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -32,7 +28,7 @@ class SelectedIngredients extends _$SelectedIngredients {
   }
 
   deleteIngredient(String ingredient) {
-    List<String> newState = state as List<String>;
+    List<String> newState = state;
     newState.remove(ingredient);
     state = newState;
   }

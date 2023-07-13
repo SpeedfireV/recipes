@@ -50,7 +50,7 @@ class _CustomElevatedButtonState extends ConsumerState<CustomElevatedButton> {
                     label: Text(
                       widget.text,
                       style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 17),
+                          fontWeight: FontWeight.w500, fontSize: 17),
                     ),
                   )
                 : ElevatedButton(
@@ -73,7 +73,7 @@ class _CustomElevatedButtonState extends ConsumerState<CustomElevatedButton> {
                         Text(
                           widget.text,
                           style: const TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 17),
+                              fontWeight: FontWeight.w500, fontSize: 17),
                         ),
                       ],
                     ),

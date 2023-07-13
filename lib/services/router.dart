@@ -30,6 +30,10 @@ class RouterServices {
         name: "addRecipe",
         builder: (context, state) => const AddRecipePage()),
     GoRoute(
+        path: "/addCategory",
+        name: "addCategory",
+        builder: (context, state) => const AddCategoryPage()),
+    GoRoute(
         path: "/category",
         name: "category",
         builder: (context, state) {

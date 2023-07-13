@@ -7,7 +7,7 @@ part of 'add_recipe_page.dart';
 // **************************************************************************
 
 String _$selectedIngredientsHash() =>
-    r'193f17723eacc026489fd56f74d2b8675956a035';
+    r'88e3747c750e147e48e272cc5cc5d4716baa4c09';
 
 /// See also [SelectedIngredients].
 @ProviderFor(SelectedIngredients)

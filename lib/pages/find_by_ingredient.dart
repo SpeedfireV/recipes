@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sports/constants/colors.dart';
+import 'package:sports/services/add_ingredient.dart';
+import 'package:sports/services/auth.dart';
+import 'package:sports/services/firebase.dart';
 import 'package:sports/services/ingredients_page.dart';
 import 'package:sports/services/router.dart';
 import 'package:sports/widgets/elevated_button.dart';
 
+import '../models/ingredient.dart';
 import '../services/add_recipe_page.dart';
 
 class ByIngredientPage extends StatefulHookConsumerWidget {
@@ -22,6 +26,7 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
   Widget build(BuildContext context) {
     String ingredientsSearch = ref.watch(searchProvider);
     List selectedIngredients = ref.watch(selectedIngredientsProvider);
+    final ingredients = ref.watch(ingredientsStreamProvider);
     return Scaffold(
       backgroundColor: ColorsCustom.background,
       appBar: AppBar(
@@ -47,20 +52,70 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
         toolbarHeight: 80,
       ),
       body: Stack(children: [
-        ListView.builder(
-          shrinkWrap: false,
-          itemBuilder: (context, index) => ListTile(
-            onTap: () {
-              debugPrint(selectedIngredients.toString());
-              ref
-                  .read(selectedIngredientsProvider.notifier)
-                  .addIngredient(index.toString());
-            },
-            selected: false,
-            leading: Icon(FontAwesomeIcons.burger),
-            title: Text("Name"),
-          ),
-          itemCount: 5,
+        ListView(
+          children: [
+            FutureBuilder(
+                future: FirestoreServices().isAdmin(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Container();
+                  }
+                  if (snapshot.connectionState == ConnectionState.done &&
+                      snapshot.data!) {
+                    debugPrint("seems to work");
+                    return ListTile(
+                      onTap: () {
+                        RouterServices.router.pushNamed("addCategory");
+                      },
+                      title: Text("Add Ingredient"),
+                      leading: Icon(Icons.add_rounded),
+                    );
+                  }
+                  if (snapshot.connectionState == ConnectionState.active) {
+                    return Container();
+                  }
+                  return Container();
+                }),
+            ingredients.when(
+                data: (data) => ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) => FutureBuilder(
+                          future: data.elementAt(index),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return Text("Error!!!");
+                            }
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Text("Loading");
+                            }
+                            if (snapshot.hasData) {
+                              final ingredient = snapshot.data!;
+                              return ListTile(
+                                onTap: () {
+                                  ref
+                                      .read(
+                                          selectedIngredientsProvider.notifier)
+                                      .addIngredient(ingredient.name);
+                                  debugPrint(selectedIngredients.toString());
+                                },
+                                selected: selectedIngredients
+                                    .contains(ingredient.name),
+                                leading: Icon(FontAwesomeIcons.burger),
+                                title: Text(ingredient.name),
+                              );
+                            }
+
+                            return Container();
+                          }),
+                      itemCount: data.length,
+                    ),
+                error: (error, stacktrace) {
+                  return Text("Error");
+                },
+                loading: () => Container()),
+          ],
         ),
         widget.text == null
             ? Align(
@@ -74,7 +129,7 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
                       RouterServices.router.pop();
                     },
                     text: "Search For Recipes",
-                    disabled: selectedIngredients.isEmpty,
+                    disabled: selectedIngredients.length == 0,
                   ),
                 ))
             : Align(

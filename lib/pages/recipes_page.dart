@@ -342,7 +342,6 @@ class _LogOutDialogState extends ConsumerState<LogOutDialog> {
             FutureBuilder(
                 future: FirestoreServices().isAdmin(),
                 builder: (context, snapshot) {
-                  debugPrint(snapshot.data.toString() + " abcdefg");
                   if (snapshot.hasError) {
                     return Container();
                   }

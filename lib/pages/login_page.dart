@@ -225,11 +225,15 @@ class OutlinedIconButton extends ConsumerStatefulWidget {
       required this.function,
       required this.icon,
       this.color,
-      this.text});
+      this.text,
+      this.errorText,
+      this.borderColor});
   final VoidCallback function;
   final IconData icon;
   final Color? color;
   final String? text;
+  final String? errorText;
+  final Color? borderColor;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -239,39 +243,63 @@ class OutlinedIconButton extends ConsumerStatefulWidget {
 class _OutlinedIconButtonState extends ConsumerState<OutlinedIconButton> {
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
-      onTap: widget.function,
-      child: Ink(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey[500]!, width: 1)),
-        child: widget.text == null
-            ? Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Icon(
-                  widget.icon,
-                  color: widget.color ?? Colors.grey[700]!,
-                ))
-            : Row(
-                children: [
-                  Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: Icon(
-                        widget.icon,
-                        color: widget.color ?? Colors.grey[700]!,
-                      )),
-                  Text(
-                    widget.text!,
-                    style: TextStyle(
-                        color: ColorsCustom.darkGrey,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: widget.function,
+          child: Ink(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                    color: widget.borderColor ?? Colors.grey[500]!, width: 2)),
+            child: widget.text == null
+                ? Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Icon(
+                      widget.icon,
+                      color: widget.errorText != null
+                          ? ColorsCustom.error
+                          : widget.color ?? Colors.grey[700]!,
+                    ))
+                : Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 1.5),
+                    child: Row(
+                      children: [
+                        Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Icon(
+                              widget.icon,
+                              color: widget.color ?? Colors.grey[700]!,
+                            )),
+                        Text(
+                          widget.text!,
+                          style: TextStyle(
+                              color: ColorsCustom.darkGrey,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        Expanded(child: Container())
+                      ],
+                    ),
                   ),
-                  Expanded(child: Container())
-                ],
-              ),
-      ),
+          ),
+        ),
+        widget.errorText != null
+            ? Padding(
+                padding: const EdgeInsets.only(left: 12.0, top: 8),
+                child: Text(
+                  widget.errorText!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: ColorsCustom.error,
+                  ),
+                ),
+              )
+            : Container()
+      ],
     );
   }
 }

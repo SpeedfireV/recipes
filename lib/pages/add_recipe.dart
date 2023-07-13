@@ -16,6 +16,7 @@ import 'package:sports/pages/login_page.dart';
 import 'package:sports/services/firebase.dart';
 import 'package:sports/services/router.dart';
 import 'package:sports/widgets/elevated_button.dart';
+import 'package:sports/widgets/page_title.dart';
 import 'package:sports/widgets/problem_snackbar.dart';
 
 import '../constants/styles.dart';
@@ -71,11 +72,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                     SizedBox(
                       width: 32,
                     ),
-                    Text(
-                      "Add Recipe",
-                      style:
-                          TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
-                    )
+                    PageTitle("Add Recipe")
                   ],
                 ),
               ),
@@ -101,7 +98,8 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       },
                       decoration: InputDecoration(
                         label: Text("Name", style: Styles.inputStyle),
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                     SizedBox(height: 10),
@@ -117,7 +115,8 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       },
                       decoration: InputDecoration(
                         label: Text("Recipe", style: Styles.inputStyle),
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                     SizedBox(height: 10),
@@ -133,7 +132,8 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       },
                       decoration: InputDecoration(
                         label: Text("Description", style: Styles.inputStyle),
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                     SizedBox(height: 10),
@@ -143,9 +143,8 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       focusNode: timeNode,
                       onTap: () async {
                         Duration? time = await showDurationPicker(
-                            snapToMins: 0.05,
                             context: context,
-                            initialTime: Duration(seconds: 10));
+                            initialTime: Duration(minutes: 5));
                         if (time != null) {
                           ref.read(estimatedTimeProvider.notifier).state =
                               time.inSeconds;
@@ -161,7 +160,8 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       decoration: InputDecoration(
                           label:
                               Text("Estimated Time", style: Styles.inputStyle),
-                          border: OutlineInputBorder(),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
                           suffixIcon: Icon(Icons.schedule)),
                     ),
                     SizedBox(height: 10),
@@ -178,10 +178,14 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       onTap: () {
                         RouterServices.router.pushNamed("category",
                             extra: [categoryController, "Find Category"]);
+                        categoryController.text = "-";
+                        _formKey.currentState!.validate();
+                        categoryController.text = "";
                       },
                       decoration: InputDecoration(
                           label: Text("Category", style: Styles.inputStyle),
-                          border: OutlineInputBorder(),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
                           suffixIcon: Icon(Icons.category_outlined)),
                     ),
                     SizedBox(height: 10),
