@@ -17,6 +17,7 @@ import 'package:sports/widgets/elevated_button.dart';
 
 import '../constants/colors.dart';
 import '../constants/styles.dart';
+import '../services/add_ingredient.dart';
 import '../widgets/page_title.dart';
 import '../widgets/problem_snackbar.dart';
 
@@ -222,6 +223,7 @@ class _AddCategoryPageState extends ConsumerState<AddCategoryPage> {
                             if (_categoryKey.currentState!.validate()) {
                               (await FirestoreServices()
                                   .addCategory(categoryController.text));
+
                               RouterServices.router.pop();
                             }
                           },

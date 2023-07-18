@@ -1,8 +1,15 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sports/models/ingredient.dart';
+import 'package:sports/services/firebase.dart';
+
+import '../models/image.dart';
 
 part 'add_recipe_page.g.dart';
+
+final adminProvider =
+    FutureProvider<Future<bool>>((ref) => FirestoreServices().isAdmin());
 
 final categoryProvider = StateProvider.autoDispose<String>((ref) {
   return "";
@@ -15,22 +22,31 @@ final estimatedTimeProvider = StateProvider.autoDispose<int>((ref) {
 @riverpod
 class SelectedIngredients extends _$SelectedIngredients {
   @override
-  List<String> build() {
+  List<Ingredient> build() {
     return [];
   }
 
-  addIngredient(String ingredient) {
-    if (!state.contains(ingredient)) {
-      state = [...state, ingredient];
-    } else {
-      deleteIngredient(ingredient);
-    }
+  addIngredient(Ingredient ingredient) {
+    state = [...state, ingredient];
   }
 
   deleteIngredient(String ingredient) {
-    List<String> newState = state;
-    newState.remove(ingredient);
-    state = newState;
+    List<Ingredient> finalState = [];
+    for (Ingredient localIngredient in state) {
+      if (localIngredient.name != ingredient) {
+        finalState.add(localIngredient);
+      }
+    }
+    state = finalState;
+  }
+
+  ingredientExists(String name) {
+    for (Ingredient ingredient in state) {
+      if (ingredient.name == name) {
+        return true;
+      }
+    }
+    return false;
   }
 
   clearIngredients() {
@@ -41,22 +57,58 @@ class SelectedIngredients extends _$SelectedIngredients {
 @riverpod
 class SelectedImages extends _$SelectedImages {
   @override
-  List<PlatformFile> build() {
+  List<ImageWithMetadata> build() {
     return [];
   }
 
-  addImages(List<PlatformFile> images) {
-    List<PlatformFile> newState = state;
+  addImages(List<ImageWithMetadata> images) {
+    List<ImageWithMetadata> newState = state;
+    List<ImageWithMetadata> finalState = [...newState];
+
     for (int i = 0; i < images.length; i++) {
-      newState.add(images.elementAt(i));
+      finalState.add(images.elementAt(i));
     }
-    state = newState;
+    state = finalState;
   }
 
-  deleteImage(image) {
-    List<PlatformFile> newState = state;
-    newState.remove(image);
-    state = newState;
+  deleteImage(String image) {
+    List<ImageWithMetadata> newState = state;
+    List<ImageWithMetadata> finalState = [];
+    finalState.addAll(newState);
+    for (int i = 0; i < finalState.length; i++) {
+      if (finalState.elementAt(i).image.name == image) {
+        bool newMain = false;
+        if (finalState.elementAt(i).main) {
+          newMain = true;
+        }
+        finalState.removeAt(i);
+        if (newMain && finalState.length != 0) {
+          finalState = [
+            ImageWithMetadata(image: finalState.elementAt(0).image, main: true),
+            ...finalState.sublist(1)
+          ];
+        }
+        break;
+      }
+    }
+    state = finalState;
+  }
+
+  setMainImage(String image) {
+    List<ImageWithMetadata> newState = state;
+    List<ImageWithMetadata> finalState = [];
+    for (int i = 0; i < newState.length; i++) {
+      if (newState.elementAt(i).image.name == image) {
+        finalState.add(
+            ImageWithMetadata(image: newState.elementAt(i).image, main: true));
+      } else if (newState.elementAt(i).main) {
+        finalState.add(
+            ImageWithMetadata(image: newState.elementAt(i).image, main: false));
+      } else {
+        finalState.add(newState.elementAt(i));
+      }
+    }
+    state = finalState;
   }
 
   clearImages() {

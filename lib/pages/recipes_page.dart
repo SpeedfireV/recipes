@@ -1,7 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sports/constants/colors.dart';
 import 'package:sports/constants/images.dart';
 import 'package:sports/functions/time.dart';
@@ -10,11 +10,12 @@ import 'package:sports/pages/login_page.dart';
 import 'package:sports/services/auth.dart';
 import 'package:sports/services/firebase.dart';
 import 'package:sports/services/item_page.dart';
+import 'package:sports/services/recipes_page.dart';
 import 'package:sports/services/router.dart';
 
 import '../widgets/elevated_button.dart';
 
-class RecipesPage extends ConsumerStatefulWidget {
+class RecipesPage extends StatefulHookConsumerWidget {
   const RecipesPage({super.key});
 
   @override
@@ -26,11 +27,20 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
   Widget build(BuildContext context) {
     bool loggedIn = ref.watch(loggedInProvider);
     final GlobalKey<ScaffoldState> _key = GlobalKey();
+    final scrollController = useScrollController();
+    final recipes = ref.watch(recipesProvider);
 
     return Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            //TODO: To the top
+          },
+          child: Icon(Icons.arrow_upward_rounded),
+        ),
         drawer: Drawer(child: Text("Working")),
         backgroundColor: ColorsCustom.background,
         body: ListView(
+          controller: scrollController,
           children: [
             Column(
               children: [
@@ -115,72 +125,33 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      GridView.count(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 20,
-                        mainAxisSpacing: 20,
-                        childAspectRatio: 5 / 6,
-                        children: [
-                          FoodItemElement(
-                              item: FoodItem(
-                                  name: "Bacon & Eggs",
-                                  description:
-                                      "Ut cillum occaecat ad veniam magna cupidatat duis culpa duis consequat esse do. Irure nostrud consectetur occaecat proident ex duis elit sunt culpa ut dolor. Aliquip sint cupidatat ut et enim sunt exercitation proident aliqua tempor. Culpa adipisicing non qui id. In magna sunt exercitation amet id dolor ad id. Ex anim anim eu cupidatat anim et. Irure ea ipsum culpa commodo sit ad voluptate aliquip eiusmod dolor excepteur quis.",
-                                  category: "breakfast",
-                                  image: Images.baconEggs,
-                                  rating: 45,
-                                  time: 1800,
-                                  ingredients: [
-                                "Find a Pan",
-                                "Crack an egg",
-                                "Fry the bacon"
-                              ],
-                                  steps: [
-                                "Bacon",
-                                "2 Eggs",
-                                "Oil"
-                              ])),
-                          FoodItemElement(
-                              item: FoodItem(
-                                  name: "Bacon & Eggs",
-                                  description: "Delicious",
-                                  category: "breakfast",
-                                  image: Images.baconEggs,
-                                  rating: 45,
-                                  time: 900,
-                                  ingredients: [],
-                                  steps: [])),
-                          FoodItemElement(
-                              item: FoodItem(
-                                  name: "Bacon & Eggs",
-                                  description: "Delicious",
-                                  category: "breakfast",
-                                  image: Images.baconEggs,
-                                  rating: 45,
-                                  time: 900,
-                                  ingredients: [],
-                                  steps: [])),
-                          FoodItemElement(
-                              item: FoodItem(
-                                  name: "Bacon & Eggs",
-                                  description: "Delicious",
-                                  category: "breakfast",
-                                  image: Images.baconEggs,
-                                  rating: 45,
-                                  time: 900,
-                                  ingredients: [],
-                                  steps: [])),
-                        ],
-                      ),
-                      TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            "See All",
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
-                          )),
+                      recipes.when(
+                          data: (data) => GridView.builder(
+                              itemCount: data.length,
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisSpacing: 20,
+                                      mainAxisSpacing: 20,
+                                      childAspectRatio: 6 / 7,
+                                      crossAxisCount: 2),
+                              itemBuilder: (context, index) {
+                                final currentRecipe = data.elementAt(index);
+                                return FoodItemElement(
+                                    item: FoodItem(
+                                        name: currentRecipe.name,
+                                        description: currentRecipe.description,
+                                        category: currentRecipe.category,
+                                        rating: 45,
+                                        time: currentRecipe.estimatedTime,
+                                        ingredients: currentRecipe.ingredients,
+                                        recipe: currentRecipe.recipe));
+                              }),
+                          error: (error, errorStack) {
+                            return Text("data");
+                          },
+                          loading: () => Container()),
                       const SizedBox(height: 40)
                     ],
                   ),
@@ -259,7 +230,23 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image(width: 120, image: AssetImage(item.image)),
+                      FutureBuilder(
+                          future:
+                              StorageServices().getMainRecipeImage(item.name),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.memory(
+                                  snapshot.data!,
+                                  fit: BoxFit.fill,
+                                  width: 120,
+                                  height: 120,
+                                ),
+                              );
+                            }
+                            return Container();
+                          })
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -298,16 +285,6 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                   )
                 ],
               ),
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.favorite,
-                    color: Colors.green[800],
-                  ),
-                  onPressed: () {},
-                ),
-              )
             ],
           ),
         ),
@@ -335,7 +312,6 @@ class _LogOutDialogState extends ConsumerState<LogOutDialog> {
         child: Text("You are going to log out."),
       ),
       actions: [
-        // TODO:Admin Add Recipe Page
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [

@@ -27,6 +27,7 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
     String ingredientsSearch = ref.watch(searchProvider);
     List selectedIngredients = ref.watch(selectedIngredientsProvider);
     final ingredients = ref.watch(ingredientsStreamProvider);
+    final isAdmin = ref.watch(adminProvider);
     return Scaffold(
       backgroundColor: ColorsCustom.background,
       appBar: AppBar(
@@ -54,61 +55,76 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
       body: Stack(children: [
         ListView(
           children: [
-            FutureBuilder(
-                future: FirestoreServices().isAdmin(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Container();
-                  }
-                  if (snapshot.connectionState == ConnectionState.done &&
-                      snapshot.data!) {
-                    debugPrint("seems to work");
-                    return ListTile(
-                      onTap: () {
-                        RouterServices.router.pushNamed("addCategory");
-                      },
-                      title: Text("Add Ingredient"),
-                      leading: Icon(Icons.add_rounded),
-                    );
-                  }
-                  if (snapshot.connectionState == ConnectionState.active) {
-                    return Container();
-                  }
-                  return Container();
-                }),
+            isAdmin.when(
+              data: (data) {
+                return ListTile(
+                  onTap: () {
+                    RouterServices.router.pushNamed("addIngredient");
+                  },
+                  title: Text("Add Ingredient"),
+                  leading: Icon(
+                    FontAwesomeIcons.plus,
+                    size: 30,
+                  ),
+                );
+              },
+              error: (error, stackTrace) {
+                return Text("Error due to $error");
+              },
+              loading: () {
+                return Text("Loading");
+              },
+            ),
             ingredients.when(
                 data: (data) => ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) => FutureBuilder(
-                          future: data.elementAt(index),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasError) {
-                              return Text("Error!!!");
-                            }
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Text("Loading");
-                            }
-                            if (snapshot.hasData) {
-                              final ingredient = snapshot.data!;
-                              return ListTile(
-                                onTap: () {
-                                  ref
+                      itemBuilder: (context, index) {
+                        return FutureBuilder(
+                            future: data.elementAt(index),
+                            builder: (context, snapshot) {
+                              List selectedIngredients =
+                                  ref.watch(selectedIngredientsProvider);
+                              if (snapshot.hasError) {
+                                return Text("Error!!!");
+                              }
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Text("Loading");
+                              }
+                              if (snapshot.hasData) {
+                                debugPrint("Snapshot has data!");
+                                final ingredient = snapshot.data!;
+                                return ListTile(
+                                  onTap: () {
+                                    if (ref
+                                        .read(selectedIngredientsProvider
+                                            .notifier)
+                                        .ingredientExists(ingredient.name)) {
+                                      ref
+                                          .read(selectedIngredientsProvider
+                                              .notifier)
+                                          .deleteIngredient(ingredient.name);
+                                    } else {
+                                      ref
+                                          .read(selectedIngredientsProvider
+                                              .notifier)
+                                          .addIngredient(ingredient);
+                                    }
+                                  },
+                                  selected: ref
                                       .read(
                                           selectedIngredientsProvider.notifier)
-                                      .addIngredient(ingredient.name);
-                                  debugPrint(selectedIngredients.toString());
-                                },
-                                selected: selectedIngredients
-                                    .contains(ingredient.name),
-                                leading: Icon(FontAwesomeIcons.burger),
-                                title: Text(ingredient.name),
-                              );
-                            }
+                                      .ingredientExists(ingredient.name),
+                                  leading: Image.memory(ingredient.image,
+                                      width: 30, height: 30),
+                                  title: Text(ingredient.name),
+                                );
+                              }
 
-                            return Container();
-                          }),
+                              return Container();
+                            });
+                      },
                       itemCount: data.length,
                     ),
                 error: (error, stacktrace) {
@@ -139,6 +155,8 @@ class _ByIngredientPageState extends ConsumerState<ByIngredientPage> {
                       const EdgeInsets.only(left: 16.0, bottom: 16, right: 16),
                   child: CustomElevatedButton(
                     function: () {
+                      ref.read(ingredientsSelectedProvider.notifier).state =
+                          true;
                       RouterServices.router.pop();
                     },
                     text: widget.text!,

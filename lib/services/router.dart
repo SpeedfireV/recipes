@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sports/models/food_item.dart';
-import 'package:sports/pages/add_recipe.dart';
+import 'package:sports/pages/add_recipe_page.dart';
 import 'package:sports/pages/category_picker.dart';
 import 'package:sports/pages/entry_page.dart';
 import 'package:sports/pages/find_by_ingredient.dart';
 import 'package:sports/pages/recipes_page.dart';
 import 'package:sports/services/local_database.dart';
 
+import '../pages/add_ingredient.dart';
 import '../pages/item_page.dart';
 import '../pages/login_page.dart';
 
@@ -33,6 +34,10 @@ class RouterServices {
         path: "/addCategory",
         name: "addCategory",
         builder: (context, state) => const AddCategoryPage()),
+    GoRoute(
+        path: "/addIngredient",
+        name: "addIngredient",
+        builder: (context, state) => const AddIngredientPage()),
     GoRoute(
         path: "/category",
         name: "category",

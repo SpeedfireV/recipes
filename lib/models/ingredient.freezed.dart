@@ -14,17 +14,12 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
-Ingredient _$IngredientFromJson(Map<String, dynamic> json) {
-  return _Ingredient.fromJson(json);
-}
-
 /// @nodoc
 mixin _$Ingredient {
   String get name => throw _privateConstructorUsedError;
-  String get image => throw _privateConstructorUsedError;
-  bool get selected => throw _privateConstructorUsedError;
+  Uint8List get image => throw _privateConstructorUsedError;
+  String get volume => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $IngredientCopyWith<Ingredient> get copyWith =>
       throw _privateConstructorUsedError;
@@ -36,7 +31,7 @@ abstract class $IngredientCopyWith<$Res> {
           Ingredient value, $Res Function(Ingredient) then) =
       _$IngredientCopyWithImpl<$Res, Ingredient>;
   @useResult
-  $Res call({String name, String image, bool selected});
+  $Res call({String name, Uint8List image, String volume});
 }
 
 /// @nodoc
@@ -54,7 +49,7 @@ class _$IngredientCopyWithImpl<$Res, $Val extends Ingredient>
   $Res call({
     Object? name = null,
     Object? image = null,
-    Object? selected = null,
+    Object? volume = null,
   }) {
     return _then(_value.copyWith(
       name: null == name
@@ -64,11 +59,11 @@ class _$IngredientCopyWithImpl<$Res, $Val extends Ingredient>
       image: null == image
           ? _value.image
           : image // ignore: cast_nullable_to_non_nullable
+              as Uint8List,
+      volume: null == volume
+          ? _value.volume
+          : volume // ignore: cast_nullable_to_non_nullable
               as String,
-      selected: null == selected
-          ? _value.selected
-          : selected // ignore: cast_nullable_to_non_nullable
-              as bool,
     ) as $Val);
   }
 }
@@ -81,7 +76,7 @@ abstract class _$$_IngredientCopyWith<$Res>
       __$$_IngredientCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, String image, bool selected});
+  $Res call({String name, Uint8List image, String volume});
 }
 
 /// @nodoc
@@ -97,7 +92,7 @@ class __$$_IngredientCopyWithImpl<$Res>
   $Res call({
     Object? name = null,
     Object? image = null,
-    Object? selected = null,
+    Object? volume = null,
   }) {
     return _then(_$_Ingredient(
       name: null == name
@@ -107,34 +102,31 @@ class __$$_IngredientCopyWithImpl<$Res>
       image: null == image
           ? _value.image
           : image // ignore: cast_nullable_to_non_nullable
+              as Uint8List,
+      volume: null == volume
+          ? _value.volume
+          : volume // ignore: cast_nullable_to_non_nullable
               as String,
-      selected: null == selected
-          ? _value.selected
-          : selected // ignore: cast_nullable_to_non_nullable
-              as bool,
     ));
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$_Ingredient implements _Ingredient {
   const _$_Ingredient(
-      {required this.name, required this.image, required this.selected});
-
-  factory _$_Ingredient.fromJson(Map<String, dynamic> json) =>
-      _$$_IngredientFromJson(json);
+      {required this.name, required this.image, required this.volume});
 
   @override
   final String name;
   @override
-  final String image;
+  final Uint8List image;
   @override
-  final bool selected;
+  final String volume;
 
   @override
   String toString() {
-    return 'Ingredient(name: $name, image: $image, selected: $selected)';
+    return 'Ingredient(name: $name, image: $image, volume: $volume)';
   }
 
   @override
@@ -143,44 +135,33 @@ class _$_Ingredient implements _Ingredient {
         (other.runtimeType == runtimeType &&
             other is _$_Ingredient &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.image, image) || other.image == image) &&
-            (identical(other.selected, selected) ||
-                other.selected == selected));
+            const DeepCollectionEquality().equals(other.image, image) &&
+            (identical(other.volume, volume) || other.volume == volume));
   }
 
-  @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, name, image, selected);
+  int get hashCode => Object.hash(
+      runtimeType, name, const DeepCollectionEquality().hash(image), volume);
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$_IngredientCopyWith<_$_Ingredient> get copyWith =>
       __$$_IngredientCopyWithImpl<_$_Ingredient>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$_IngredientToJson(
-      this,
-    );
-  }
 }
 
 abstract class _Ingredient implements Ingredient {
   const factory _Ingredient(
       {required final String name,
-      required final String image,
-      required final bool selected}) = _$_Ingredient;
-
-  factory _Ingredient.fromJson(Map<String, dynamic> json) =
-      _$_Ingredient.fromJson;
+      required final Uint8List image,
+      required final String volume}) = _$_Ingredient;
 
   @override
   String get name;
   @override
-  String get image;
+  Uint8List get image;
   @override
-  bool get selected;
+  String get volume;
   @override
   @JsonKey(ignore: true)
   _$$_IngredientCopyWith<_$_Ingredient> get copyWith =>

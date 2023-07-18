@@ -25,6 +25,7 @@ mixin _$Recipe {
   String get description => throw _privateConstructorUsedError;
   int get estimatedTime => throw _privateConstructorUsedError;
   String get category => throw _privateConstructorUsedError;
+  List<String> get ingredients => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -41,7 +42,8 @@ abstract class $RecipeCopyWith<$Res> {
       String recipe,
       String description,
       int estimatedTime,
-      String category});
+      String category,
+      List<String> ingredients});
 }
 
 /// @nodoc
@@ -62,6 +64,7 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
     Object? description = null,
     Object? estimatedTime = null,
     Object? category = null,
+    Object? ingredients = null,
   }) {
     return _then(_value.copyWith(
       name: null == name
@@ -84,6 +87,10 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
           ? _value.category
           : category // ignore: cast_nullable_to_non_nullable
               as String,
+      ingredients: null == ingredients
+          ? _value.ingredients
+          : ingredients // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ) as $Val);
   }
 }
@@ -99,7 +106,8 @@ abstract class _$$_RecipeCopyWith<$Res> implements $RecipeCopyWith<$Res> {
       String recipe,
       String description,
       int estimatedTime,
-      String category});
+      String category,
+      List<String> ingredients});
 }
 
 /// @nodoc
@@ -117,6 +125,7 @@ class __$$_RecipeCopyWithImpl<$Res>
     Object? description = null,
     Object? estimatedTime = null,
     Object? category = null,
+    Object? ingredients = null,
   }) {
     return _then(_$_Recipe(
       name: null == name
@@ -139,6 +148,10 @@ class __$$_RecipeCopyWithImpl<$Res>
           ? _value.category
           : category // ignore: cast_nullable_to_non_nullable
               as String,
+      ingredients: null == ingredients
+          ? _value._ingredients
+          : ingredients // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -151,7 +164,9 @@ class _$_Recipe implements _Recipe {
       required this.recipe,
       required this.description,
       required this.estimatedTime,
-      required this.category});
+      required this.category,
+      required final List<String> ingredients})
+      : _ingredients = ingredients;
 
   factory _$_Recipe.fromJson(Map<String, dynamic> json) =>
       _$$_RecipeFromJson(json);
@@ -166,10 +181,17 @@ class _$_Recipe implements _Recipe {
   final int estimatedTime;
   @override
   final String category;
+  final List<String> _ingredients;
+  @override
+  List<String> get ingredients {
+    if (_ingredients is EqualUnmodifiableListView) return _ingredients;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_ingredients);
+  }
 
   @override
   String toString() {
-    return 'Recipe(name: $name, recipe: $recipe, description: $description, estimatedTime: $estimatedTime, category: $category)';
+    return 'Recipe(name: $name, recipe: $recipe, description: $description, estimatedTime: $estimatedTime, category: $category, ingredients: $ingredients)';
   }
 
   @override
@@ -184,13 +206,21 @@ class _$_Recipe implements _Recipe {
             (identical(other.estimatedTime, estimatedTime) ||
                 other.estimatedTime == estimatedTime) &&
             (identical(other.category, category) ||
-                other.category == category));
+                other.category == category) &&
+            const DeepCollectionEquality()
+                .equals(other._ingredients, _ingredients));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-      runtimeType, name, recipe, description, estimatedTime, category);
+      runtimeType,
+      name,
+      recipe,
+      description,
+      estimatedTime,
+      category,
+      const DeepCollectionEquality().hash(_ingredients));
 
   @JsonKey(ignore: true)
   @override
@@ -212,7 +242,8 @@ abstract class _Recipe implements Recipe {
       required final String recipe,
       required final String description,
       required final int estimatedTime,
-      required final String category}) = _$_Recipe;
+      required final String category,
+      required final List<String> ingredients}) = _$_Recipe;
 
   factory _Recipe.fromJson(Map<String, dynamic> json) = _$_Recipe.fromJson;
 
@@ -226,6 +257,8 @@ abstract class _Recipe implements Recipe {
   int get estimatedTime;
   @override
   String get category;
+  @override
+  List<String> get ingredients;
   @override
   @JsonKey(ignore: true)
   _$$_RecipeCopyWith<_$_Recipe> get copyWith =>

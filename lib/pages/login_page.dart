@@ -254,7 +254,7 @@ class _OutlinedIconButtonState extends ConsumerState<OutlinedIconButton> {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                    color: widget.borderColor ?? Colors.grey[500]!, width: 2)),
+                    color: widget.borderColor ?? Colors.grey[500]!, width: 1)),
             child: widget.text == null
                 ? Padding(
                     padding: const EdgeInsets.all(15.0),

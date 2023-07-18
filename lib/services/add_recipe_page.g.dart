@@ -7,12 +7,12 @@ part of 'add_recipe_page.dart';
 // **************************************************************************
 
 String _$selectedIngredientsHash() =>
-    r'88e3747c750e147e48e272cc5cc5d4716baa4c09';
+    r'adf9682ea585c480d4ca84a90a967815684f63c2';
 
 /// See also [SelectedIngredients].
 @ProviderFor(SelectedIngredients)
 final selectedIngredientsProvider =
-    AutoDisposeNotifierProvider<SelectedIngredients, List<String>>.internal(
+    AutoDisposeNotifierProvider<SelectedIngredients, List<Ingredient>>.internal(
   SelectedIngredients.new,
   name: r'selectedIngredientsProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,13 +22,13 @@ final selectedIngredientsProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$SelectedIngredients = AutoDisposeNotifier<List<String>>;
-String _$selectedImagesHash() => r'2b4eaf45e143d32f3e2074019696cb76b7abd80d';
+typedef _$SelectedIngredients = AutoDisposeNotifier<List<Ingredient>>;
+String _$selectedImagesHash() => r'f63f1eb12c36a79b356cbcbaf466449ae4ac2bf3';
 
 /// See also [SelectedImages].
 @ProviderFor(SelectedImages)
-final selectedImagesProvider =
-    AutoDisposeNotifierProvider<SelectedImages, List<PlatformFile>>.internal(
+final selectedImagesProvider = AutoDisposeNotifierProvider<SelectedImages,
+    List<ImageWithMetadata>>.internal(
   SelectedImages.new,
   name: r'selectedImagesProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -38,5 +38,5 @@ final selectedImagesProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$SelectedImages = AutoDisposeNotifier<List<PlatformFile>>;
+typedef _$SelectedImages = AutoDisposeNotifier<List<ImageWithMetadata>>;
 // ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions

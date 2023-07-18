@@ -5,12 +5,14 @@ part 'recipe.g.dart';
 
 @freezed
 class Recipe with _$Recipe {
-  const factory Recipe(
-      {required String name,
-      required String recipe,
-      required String description,
-      required int estimatedTime,
-      required String category}) = _Recipe;
+  const factory Recipe({
+    required String name,
+    required String recipe,
+    required String description,
+    required int estimatedTime,
+    required String category,
+    required List<String> ingredients,
+  }) = _Recipe;
 
   factory Recipe.fromJson(Map<String, Object?> json) => _$RecipeFromJson(json);
 }

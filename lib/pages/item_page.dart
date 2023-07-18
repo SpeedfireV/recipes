@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sports/constants/colors.dart';
@@ -5,6 +7,7 @@ import 'package:sports/constants/images.dart';
 import 'package:sports/functions/time.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/login_page.dart';
+import 'package:sports/services/firebase.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/router.dart';
 
@@ -31,13 +34,28 @@ class _RecipePageState extends ConsumerState<RecipePage> {
               Align(
                 alignment: Alignment.center,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 24.0),
-                  child: Image(
-                    image: AssetImage(Images.burger),
-                    width: 240,
-                    height: 240,
-                  ),
-                ),
+                    padding: const EdgeInsets.only(top: 24.0),
+                    child: FutureBuilder(
+                        future: StorageServices().getRecipeImages(item.name),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return SizedBox(
+                              height: 240,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (context, index) {
+                                  return Image.memory(
+                                    snapshot.data!.elementAt(index),
+                                    width: 240,
+                                    height: 240,
+                                  );
+                                },
+                                itemCount: snapshot.data!.length,
+                              ),
+                            );
+                          }
+                          return SizedBox(height: 240);
+                        })),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -128,7 +146,7 @@ class _RecipePageState extends ConsumerState<RecipePage> {
           FoodItemDescription(
               index: currentTab,
               description: item.description,
-              steps: item.steps,
+              recipe: item.recipe,
               ingredients: item.ingredients)
         ],
       ),
@@ -186,11 +204,11 @@ class FoodItemDescription extends ConsumerWidget {
       {super.key,
       required this.index,
       required this.description,
-      required this.steps,
+      required this.recipe,
       required this.ingredients});
   final int index;
   final String description;
-  final List<String> steps;
+  final String recipe;
   final List<String> ingredients;
 
   @override
@@ -231,39 +249,44 @@ class FoodItemDescription extends ConsumerWidget {
                   )),
         );
       case 2:
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: ListView.builder(
-            itemCount: steps.length,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) => Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      (index + 1).toString(),
-                      style: TextStyle(
-                          color: ColorsCustom.darkGrey,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16),
-                    ),
-                    SizedBox(width: 40),
-                    Text(
-                      steps[index],
-                      style: TextStyle(color: ColorsCustom.grey, fontSize: 16),
-                    )
-                  ],
-                ),
-                Divider(
-                  color: ColorsCustom.lightGrey,
-                  thickness: 1,
-                ),
-              ],
+        {
+          LineSplitter ls = LineSplitter();
+          List<String> steps = ls.convert(recipe);
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ListView.builder(
+              itemCount: steps.length,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        (index + 1).toString(),
+                        style: TextStyle(
+                            color: ColorsCustom.darkGrey,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16),
+                      ),
+                      SizedBox(width: 40),
+                      Text(
+                        steps[index],
+                        style:
+                            TextStyle(color: ColorsCustom.grey, fontSize: 16),
+                      )
+                    ],
+                  ),
+                  Divider(
+                    color: ColorsCustom.lightGrey,
+                    thickness: 1,
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        }
       default:
         return Container();
     }

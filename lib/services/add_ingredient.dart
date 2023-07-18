@@ -1,4 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io';
+
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sports/models/ingredient.dart';
 import 'package:sports/services/firebase.dart';
@@ -12,3 +14,15 @@ class IngredientsStream extends _$IngredientsStream {
     yield* FirestoreServices().getIngredients();
   }
 }
+
+final ingredientImageProvider = StateProvider.autoDispose<File?>((ref) {
+  return;
+});
+
+final ingredientImagePickedProvider =
+    StateProvider.autoDispose<bool>((ref) => true);
+
+final ingredientsSelectedProvider =
+    StateProvider.autoDispose<bool>((ref) => true);
+
+final imagesSelectedProvider = StateProvider.autoDispose<bool>((ref) => true);
