@@ -1,13 +1,17 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:sports/constants/colors.dart';
 import 'package:sports/constants/images.dart';
 import 'package:sports/functions/time.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/login_page.dart';
 import 'package:sports/services/auth.dart';
+import 'package:sports/services/category_picker.dart';
 import 'package:sports/services/firebase.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/recipes_page.dart';
@@ -29,6 +33,8 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
     final GlobalKey<ScaffoldState> _key = GlobalKey();
     final scrollController = useScrollController();
     final recipes = ref.watch(recipesProvider);
+    final categories = ref.watch(categoriesProvider);
+    final categoryFilter = ref.watch(categoryFilterProvider);
 
     return Scaffold(
         floatingActionButton: FloatingActionButton(
@@ -49,15 +55,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Builder(
-                          builder: (context) => IconButton(
-                              onPressed: () {
-                                Scaffold.of(context).openDrawer();
-                              },
-                              icon: const Icon(FontAwesomeIcons.barsStaggered)),
-                        )),
+                    Container(),
                     Padding(
                       padding: const EdgeInsets.only(right: 16.0),
                       child: OutlinedIconButton(
@@ -113,41 +111,116 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                       const SizedBox(height: 8),
                       SizedBox(
                         height: 50,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) => CategoryButton(
-                              text: ["All", "Breakfast"].elementAt(index),
-                              activated: index.remainder(2) == 0,
-                              index: index),
-                          itemCount: 2,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(width: 12),
-                        ),
+                        child: categories.when(
+                            data: (data) {
+                              List<String> possibleCategories = [
+                                "All",
+                                ...data
+                              ];
+                              return ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (context, index) {
+                                  final String category =
+                                      possibleCategories.elementAt(index);
+                                  return CategoryButton(
+                                    text: category,
+                                    activated: category == categoryFilter,
+                                    index: index,
+                                    function: () {
+                                      ref
+                                          .read(categoryFilterProvider.notifier)
+                                          .state = category;
+                                    },
+                                  );
+                                },
+                                itemCount: possibleCategories.length,
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(width: 12),
+                              );
+                            },
+                            error: (error, stackTrace) => Text("Error"),
+                            loading: () {
+                              return ListView.separated(
+                                physics: NeverScrollableScrollPhysics(),
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (context, index) {
+                                  return Shimmer.fromColors(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(24)),
+                                        width: 140,
+                                        height: 50,
+                                      ),
+                                      baseColor: ColorsCustom.lightGrey
+                                          .withOpacity(0.3),
+                                      highlightColor: ColorsCustom.background);
+                                },
+                                itemCount: 4,
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(width: 12),
+                              );
+                            }),
                       ),
                       const SizedBox(height: 20),
                       recipes.when(
-                          data: (data) => GridView.builder(
-                              itemCount: data.length,
-                              physics: const NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisSpacing: 20,
-                                      mainAxisSpacing: 20,
-                                      childAspectRatio: 6 / 7,
-                                      crossAxisCount: 2),
-                              itemBuilder: (context, index) {
-                                final currentRecipe = data.elementAt(index);
-                                return FoodItemElement(
-                                    item: FoodItem(
-                                        name: currentRecipe.name,
-                                        description: currentRecipe.description,
-                                        category: currentRecipe.category,
-                                        rating: 45,
-                                        time: currentRecipe.estimatedTime,
-                                        ingredients: currentRecipe.ingredients,
-                                        recipe: currentRecipe.recipe));
-                              }),
+                          data: (data) {
+                            if (categoryFilter == "All") {
+                              return GridView.builder(
+                                  itemCount: data.length,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisSpacing: 20,
+                                          mainAxisSpacing: 20,
+                                          childAspectRatio: 6 / 7,
+                                          crossAxisCount: 2),
+                                  itemBuilder: (context, index) {
+                                    final currentRecipe = data.elementAt(index);
+                                    return FoodItemElement(
+                                        item: FoodItem(
+                                            name: currentRecipe.name,
+                                            description:
+                                                currentRecipe.description,
+                                            category: currentRecipe.category,
+                                            rating: 45,
+                                            time: currentRecipe.estimatedTime,
+                                            ingredients:
+                                                currentRecipe.ingredients,
+                                            recipe: currentRecipe.recipe));
+                                  });
+                            } else {
+                              final filteredItems = data.where((element) =>
+                                  element.category == categoryFilter);
+                              return GridView.builder(
+                                  itemCount: filteredItems.length,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisSpacing: 20,
+                                          mainAxisSpacing: 20,
+                                          childAspectRatio: 6 / 7,
+                                          crossAxisCount: 2),
+                                  itemBuilder: (context, index) {
+                                    final currentRecipe =
+                                        filteredItems.elementAt(index);
+                                    return FoodItemElement(
+                                        item: FoodItem(
+                                            name: currentRecipe.name,
+                                            description:
+                                                currentRecipe.description,
+                                            category: currentRecipe.category,
+                                            rating: 45,
+                                            time: currentRecipe.estimatedTime,
+                                            ingredients:
+                                                currentRecipe.ingredients,
+                                            recipe: currentRecipe.recipe));
+                                  });
+                            }
+                          },
                           error: (error, errorStack) {
                             return Text("data");
                           },
@@ -168,10 +241,12 @@ class CategoryButton extends ConsumerStatefulWidget {
       {super.key,
       required this.text,
       required this.activated,
-      required this.index});
+      required this.index,
+      required this.function});
   final String text;
   final bool activated;
   final int index;
+  final Function function;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _CategoryButtonState();
@@ -187,7 +262,9 @@ class _CategoryButtonState extends ConsumerState<CategoryButton> {
                 : const MaterialStatePropertyAll(Colors.white),
             shape: MaterialStatePropertyAll(RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24)))),
-        onPressed: () {},
+        onPressed: () {
+          widget.function.call();
+        },
         child: Text(
           widget.text,
           style: TextStyle(
@@ -211,6 +288,8 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
   @override
   Widget build(BuildContext context) {
     final FoodItem item = widget.item;
+    Future<Uint8List?> _getMainRecipeImage =
+        StorageServices().getMainRecipeImage(item.name);
     return Material(
       borderRadius: BorderRadius.circular(10),
       elevation: 5,
@@ -231,8 +310,7 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FutureBuilder(
-                          future:
-                              StorageServices().getMainRecipeImage(item.name),
+                          future: _getMainRecipeImage,
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
                               return ClipRRect(
@@ -240,12 +318,22 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                                 child: Image.memory(
                                   snapshot.data!,
                                   fit: BoxFit.fill,
-                                  width: 120,
-                                  height: 120,
+                                  width: 130,
+                                  height: 130,
                                 ),
                               );
                             }
-                            return Container();
+                            return Shimmer.fromColors(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10)),
+                                  width: 130,
+                                  height: 130,
+                                ),
+                                baseColor:
+                                    ColorsCustom.lightGrey.withOpacity(0.3),
+                                highlightColor: ColorsCustom.background);
                           })
                     ],
                   ),

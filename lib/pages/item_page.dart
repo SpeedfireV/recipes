@@ -1,9 +1,12 @@
 import 'dart:convert';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:sports/constants/colors.dart';
-import 'package:sports/constants/images.dart';
 import 'package:sports/functions/time.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/login_page.dart';
@@ -11,7 +14,7 @@ import 'package:sports/services/firebase.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/router.dart';
 
-class RecipePage extends ConsumerStatefulWidget {
+class RecipePage extends StatefulHookConsumerWidget {
   const RecipePage({super.key, required this.item});
   final FoodItem item;
 
@@ -23,40 +26,16 @@ class _RecipePageState extends ConsumerState<RecipePage> {
   @override
   Widget build(BuildContext context) {
     int currentTab = ref.watch(tabSelectorProvider);
+    int imagePosition = ref.watch(imagePositionProvider);
     FoodItem item = widget.item;
     return Scaffold(
       backgroundColor: ColorsCustom.background,
       body: ListView(
         children: [
           SizedBox(height: 16),
-          Stack(
+          Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: FutureBuilder(
-                        future: StorageServices().getRecipeImages(item.name),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return SizedBox(
-                              height: 240,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  return Image.memory(
-                                    snapshot.data!.elementAt(index),
-                                    width: 240,
-                                    height: 240,
-                                  );
-                                },
-                                itemCount: snapshot.data!.length,
-                              ),
-                            );
-                          }
-                          return SizedBox(height: 240);
-                        })),
-              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
@@ -76,6 +55,72 @@ class _RecipePageState extends ConsumerState<RecipePage> {
                     )
                   ],
                 ),
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: FutureBuilder(
+                        future: StorageServices().getRecipeImages(item.name),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                    height: 240,
+                                    child: Stack(
+                                      children: [
+                                        CarouselSlider.builder(
+                                          itemBuilder:
+                                              (context, index, realIndex) {
+                                            return ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: Image.memory(
+                                                snapshot.data!.elementAt(index),
+                                                width: 240,
+                                                height: 240,
+                                                fit: BoxFit.fill,
+                                              ),
+                                            );
+                                          },
+                                          options: CarouselOptions(
+                                              onPageChanged:
+                                                  (newValue, reason) {
+                                                ref
+                                                    .read(imagePositionProvider
+                                                        .notifier)
+                                                    .state = (newValue).toInt();
+                                              },
+                                              enableInfiniteScroll: false),
+                                          itemCount: snapshot.data!.length,
+                                        ),
+                                      ],
+                                    )),
+                                SizedBox(height: 8),
+                                AnimatedSmoothIndicator(
+                                  activeIndex: imagePosition,
+                                  count: snapshot.data!.length,
+                                  effect: WormEffect(
+                                      activeDotColor: Colors.green[800]!),
+                                )
+                              ],
+                            );
+                          }
+                          return Shimmer.fromColors(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10)),
+                                width: 240,
+                                height: 240,
+                              ),
+                              baseColor:
+                                  ColorsCustom.lightGrey.withOpacity(0.3),
+                              highlightColor: ColorsCustom.background);
+                          ;
+                        })),
               ),
             ],
           ),
