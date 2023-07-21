@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -10,8 +9,8 @@ import 'package:sports/constants/colors.dart';
 import 'package:sports/functions/time.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/login_page.dart';
-import 'package:sports/services/firebase.dart';
 import 'package:sports/services/item_page.dart';
+import 'package:sports/services/local_database.dart';
 import 'package:sports/services/router.dart';
 
 class RecipePage extends StatefulHookConsumerWidget {
@@ -28,11 +27,12 @@ class _RecipePageState extends ConsumerState<RecipePage> {
     int currentTab = ref.watch(tabSelectorProvider);
     int imagePosition = ref.watch(imagePositionProvider);
     FoodItem item = widget.item;
+    final recipeImages = ref.watch(recipeImagesProvider(item.name));
     return Scaffold(
       backgroundColor: ColorsCustom.background,
       body: ListView(
         children: [
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -60,71 +60,81 @@ class _RecipePageState extends ConsumerState<RecipePage> {
                 alignment: Alignment.center,
                 child: Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: FutureBuilder(
-                        future: StorageServices().getRecipeImages(item.name),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                                    height: 240,
-                                    child: Stack(
-                                      children: [
-                                        CarouselSlider.builder(
-                                          itemBuilder:
-                                              (context, index, realIndex) {
-                                            return ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              child: Image.memory(
-                                                snapshot.data!.elementAt(index),
-                                                width: 240,
-                                                height: 240,
-                                                fit: BoxFit.fill,
-                                              ),
-                                            );
-                                          },
-                                          options: CarouselOptions(
-                                              onPageChanged:
-                                                  (newValue, reason) {
-                                                ref
-                                                    .read(imagePositionProvider
-                                                        .notifier)
-                                                    .state = (newValue).toInt();
-                                              },
-                                              enableInfiniteScroll: false),
-                                          itemCount: snapshot.data!.length,
+                    child: recipeImages.when(data: (data) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                              height: 240,
+                              child: Stack(
+                                children: [
+                                  CarouselSlider.builder(
+                                    itemBuilder: (context, index, realIndex) {
+                                      if (index == 0) {
+                                        return ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: Image.memory(
+                                            LocalDatabaseServices()
+                                                .getRecipeImage(item.name)!,
+                                            width: 240,
+                                            height: 240,
+                                            fit: BoxFit.fill,
+                                          ),
+                                        );
+                                      }
+                                      return ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Hero(
+                                          tag: item.name,
+                                          child: Image.memory(
+                                            data.elementAt(index - 1),
+                                            width: 240,
+                                            height: 240,
+                                            fit: BoxFit.fill,
+                                          ),
                                         ),
-                                      ],
-                                    )),
-                                SizedBox(height: 8),
-                                AnimatedSmoothIndicator(
-                                  activeIndex: imagePosition,
-                                  count: snapshot.data!.length,
-                                  effect: WormEffect(
-                                      activeDotColor: Colors.green[800]!),
-                                )
-                              ],
-                            );
-                          }
-                          return Shimmer.fromColors(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10)),
-                                width: 240,
-                                height: 240,
-                              ),
-                              baseColor:
-                                  ColorsCustom.lightGrey.withOpacity(0.3),
-                              highlightColor: ColorsCustom.background);
-                          ;
-                        })),
+                                      );
+                                    },
+                                    options: CarouselOptions(
+                                        onPageChanged: (newValue, reason) {
+                                          ref
+                                              .read(imagePositionProvider
+                                                  .notifier)
+                                              .state = (newValue).toInt();
+                                        },
+                                        enableInfiniteScroll: false),
+                                    itemCount: data.length + 1,
+                                  ),
+                                ],
+                              )),
+                          const SizedBox(height: 8),
+                          AnimatedSmoothIndicator(
+                            activeIndex: imagePosition,
+                            count: data.length + 1,
+                            effect:
+                                WormEffect(activeDotColor: Colors.green[800]!),
+                          )
+                        ],
+                      );
+                    }, error: (error, errorStack) {
+                      return Text("Error due to $error");
+                    }, loading: () {
+                      return Shimmer.fromColors(
+                          baseColor: ColorsCustom.lightGrey.withOpacity(0.3),
+                          highlightColor: ColorsCustom.background,
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10)),
+                            width: 240,
+                            height: 240,
+                          ));
+                    })),
               ),
             ],
           ),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
@@ -144,23 +154,21 @@ class _RecipePageState extends ConsumerState<RecipePage> {
                       Icons.schedule,
                       color: ColorsCustom.lightGreen,
                     ),
-                    SizedBox(width: 2),
+                    const SizedBox(width: 2),
                     Text(
                       formatTime(item.time),
                       style: TextStyle(color: ColorsCustom.grey),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Icon(
                       Icons.star,
                       color: ColorsCustom.lightGreen,
                     ),
-                    SizedBox(width: 2),
+                    const SizedBox(width: 2),
                     Text(
                       item.rating < 10
                           ? "0.${item.rating}"
-                          : item.rating.toString().substring(0, 1) +
-                              "." +
-                              item.rating.toString().substring(1),
+                          : "${item.rating.toString().substring(0, 1)}.${item.rating.toString().substring(1)}",
                       style: TextStyle(color: ColorsCustom.grey),
                     )
                   ],
@@ -179,20 +187,22 @@ class _RecipePageState extends ConsumerState<RecipePage> {
             children: [
               CategoryTabSelector(
                   index: 0, currentIndex: currentTab, title: "Details"),
-              SizedBox(width: 20),
+              const SizedBox(width: 20),
               CategoryTabSelector(
                   index: 1, currentIndex: currentTab, title: "Ingredients"),
-              SizedBox(width: 20),
+              const SizedBox(width: 20),
               CategoryTabSelector(
                   index: 2, currentIndex: currentTab, title: "Recipe")
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           FoodItemDescription(
-              index: currentTab,
-              description: item.description,
-              recipe: item.recipe,
-              ingredients: item.ingredients)
+            index: currentTab,
+            description: item.description,
+            recipe: item.recipe,
+            ingredients: item.ingredients,
+            recipeName: item.name,
+          )
         ],
       ),
     );
@@ -226,7 +236,7 @@ class _CategoryTabSelectorState extends ConsumerState<CategoryTabSelector> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
         child: Ink(
-          padding: EdgeInsets.only(bottom: 4),
+          padding: const EdgeInsets.only(bottom: 4),
           decoration: BoxDecoration(
               border: active
                   ? Border(bottom: BorderSide(color: ColorsCustom.green))
@@ -250,11 +260,13 @@ class FoodItemDescription extends ConsumerWidget {
       required this.index,
       required this.description,
       required this.recipe,
-      required this.ingredients});
+      required this.ingredients,
+      required this.recipeName});
   final int index;
   final String description;
   final String recipe;
   final List<String> ingredients;
+  final String recipeName;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -269,40 +281,97 @@ class FoodItemDescription extends ConsumerWidget {
         );
       case 1:
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: ingredients.length,
-              itemBuilder: (context, index) => Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            ingredients[index],
-                            style: TextStyle(
-                                color: ColorsCustom.grey, fontSize: 16),
-                          )
-                        ],
-                      ),
-                      Divider(
-                        color: ColorsCustom.lightGrey,
-                        thickness: 1,
-                      )
-                    ],
-                  )),
+              itemBuilder: (context, index) {
+                final ingredientImage = ref.watch(
+                    itemPageIngredientImageProvider(
+                        ingredients.elementAt(index)));
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        LocalDatabaseServices().getIngredientImage(
+                                    ingredients.elementAt(index)) !=
+                                null
+                            ? Row(
+                                children: [
+                                  Image.memory(
+                                    LocalDatabaseServices().getIngredientImage(
+                                        ingredients.elementAt(index))!,
+                                    width: 24,
+                                    height: 24,
+                                  ),
+                                  const SizedBox(width: 8)
+                                ],
+                              )
+                            : ingredientImage.when(
+                                data: (data) {
+                                  if (data != null) {
+                                    LocalDatabaseServices().addIngredientImage(
+                                        ingredients.elementAt(index), data);
+                                    return Row(
+                                      children: [
+                                        Image.memory(
+                                          data,
+                                          width: 24,
+                                          height: 24,
+                                        ),
+                                        const SizedBox(width: 8)
+                                      ],
+                                    );
+                                  } else {
+                                    return const Text("");
+                                  }
+                                },
+                                error: (error, stackTrace) {
+                                  return Text("Error due to $error");
+                                },
+                                loading: () {
+                                  return Shimmer.fromColors(
+                                      baseColor: ColorsCustom.lightGrey
+                                          .withOpacity(0.3),
+                                      highlightColor: ColorsCustom.background,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                        width: 24,
+                                        height: 24,
+                                      ));
+                                },
+                              ),
+                        Text(
+                          ingredients[index],
+                          style:
+                              TextStyle(color: ColorsCustom.grey, fontSize: 16),
+                        )
+                      ],
+                    ),
+                    Divider(
+                      color: ColorsCustom.lightGrey,
+                      thickness: 1,
+                    )
+                  ],
+                );
+              }),
         );
       case 2:
         {
-          LineSplitter ls = LineSplitter();
+          LineSplitter ls = const LineSplitter();
           List<String> steps = ls.convert(recipe);
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ListView.builder(
               itemCount: steps.length,
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) => Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -315,7 +384,7 @@ class FoodItemDescription extends ConsumerWidget {
                             fontWeight: FontWeight.w600,
                             fontSize: 16),
                       ),
-                      SizedBox(width: 40),
+                      const SizedBox(width: 40),
                       Text(
                         steps[index],
                         style:

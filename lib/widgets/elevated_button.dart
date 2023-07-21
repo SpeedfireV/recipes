@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sports/services/add_recipe_page.dart';
 
 class CustomElevatedButton extends ConsumerStatefulWidget {
   const CustomElevatedButton(
@@ -22,6 +23,7 @@ class CustomElevatedButton extends ConsumerStatefulWidget {
 class _CustomElevatedButtonState extends ConsumerState<CustomElevatedButton> {
   @override
   Widget build(BuildContext context) {
+    ref.watch(selectedIngredientsProvider);
     return Row(
       children: [
         Expanded(
@@ -41,7 +43,7 @@ class _CustomElevatedButtonState extends ConsumerState<CustomElevatedButton> {
                             widget.function.call();
                           },
                     icon: Padding(
-                      padding: EdgeInsets.only(right: 8, left: 8),
+                      padding: const EdgeInsets.only(right: 8, left: 8),
                       child: Icon(
                         widget.icon,
                         size: 28,

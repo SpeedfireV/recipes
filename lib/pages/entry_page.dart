@@ -67,7 +67,7 @@ class _EntryPageState extends ConsumerState<EntryPage> {
                 count: 4,
                 effect: WormEffect(activeDotColor: Colors.green[800]!),
               ),
-              SizedBox(height: 30)
+              const SizedBox(height: 30)
             ],
           )
         ],
@@ -107,20 +107,20 @@ class _EntryPageButtonState extends ConsumerState<EntryPageButton> {
             ? Align(
                 alignment: Alignment.topLeft,
                 child: Padding(
-                  padding: EdgeInsets.only(left: 16, top: 16),
+                  padding: const EdgeInsets.only(left: 16, top: 16),
                   child: IconButton(
                       onPressed: () {
                         widget.controller.previousPage(
-                            duration: Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 300),
                             curve: Curves.easeIn);
                       },
-                      icon: Icon(Icons.arrow_back)),
+                      icon: const Icon(Icons.arrow_back)),
                 ),
               )
             : Container(),
         Column(
           children: [
-            SizedBox(
+            const SizedBox(
               height: 50,
             ),
             Image(width: 220, height: 220, image: AssetImage(widget.image)),
@@ -129,13 +129,13 @@ class _EntryPageButtonState extends ConsumerState<EntryPageButton> {
                 ? RichText(
                     text: TextSpan(
                         children: [
-                          TextSpan(text: "Welcome to "),
+                          const TextSpan(text: "Welcome to "),
                           TextSpan(
                               text: "Delicious",
                               style: TextStyle(
                                   color: Colors.green[800],
                                   fontWeight: FontWeight.w900)),
-                          TextSpan(text: "!")
+                          const TextSpan(text: "!")
                         ],
                         style: TextStyle(
                             fontSize: 30,
@@ -160,27 +160,27 @@ class _EntryPageButtonState extends ConsumerState<EntryPageButton> {
                   child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40.0),
                 child: ElevatedButton(
-                    style: ButtonStyle(
+                    style: const ButtonStyle(
                         minimumSize: MaterialStatePropertyAll(Size(0, 60))),
                     onPressed: () {
                       widget.last == true
                           ? {
-                              DatabaseServices.addToBox().then((value) {
+                              LocalDatabaseServices().addToBox().then((value) {
                                 RouterServices.router.goNamed("login");
                               }),
                             }
                           : widget.controller.nextPage(
-                              duration: Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.ease);
                     },
                     child: Text(
                       widget.last == true ? "Log In" : "Continue",
-                      style:
-                          TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 19, fontWeight: FontWeight.w600),
                     )),
               ))
             ]),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             widget.last == true
                 ? Row(children: [
                     Expanded(
@@ -190,13 +190,13 @@ class _EntryPageButtonState extends ConsumerState<EntryPageButton> {
                           style: ButtonStyle(
                               backgroundColor:
                                   MaterialStatePropertyAll(Colors.grey[100]),
-                              elevation: MaterialStatePropertyAll(0),
+                              elevation: const MaterialStatePropertyAll(0),
                               side: MaterialStatePropertyAll(BorderSide(
                                   color: Colors.grey[800]!, width: 2)),
                               minimumSize:
-                                  MaterialStatePropertyAll(Size(0, 60))),
+                                  const MaterialStatePropertyAll(Size(0, 60))),
                           onPressed: () {
-                            DatabaseServices.addToBox().then((value) {
+                            LocalDatabaseServices().addToBox().then((value) {
                               RouterServices.router.goNamed("recipes");
                             });
                           },
@@ -210,7 +210,7 @@ class _EntryPageButtonState extends ConsumerState<EntryPageButton> {
                     ))
                   ])
                 : Container(),
-            SizedBox(
+            const SizedBox(
               height: 80,
             )
           ],

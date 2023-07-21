@@ -12,6 +12,8 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Hive.initFlutter();
   await Hive.openBox("launch");
+  await Hive.openBox("recipesImages");
+  await Hive.openBox("ingredientsImages");
   if (AuthService.loggedIn() && !(await FirestoreServices().profileCreated())) {
     await AuthService.logOut();
   }

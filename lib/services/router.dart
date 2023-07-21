@@ -11,21 +11,28 @@ import 'package:sports/services/local_database.dart';
 import '../pages/add_ingredient.dart';
 import '../pages/item_page.dart';
 import '../pages/login_page.dart';
+import '../pages/recipes_by_ingredients_page.dart';
 
 class RouterServices {
   static final router = GoRouter(routes: [
     GoRoute(
         path: "/",
         builder: (context, state) {
-          if (DatabaseServices.appLaunched()) {
-            return RecipesPage();
+          if (LocalDatabaseServices().appLaunched()) {
+            return const RecipesPage();
           }
-          return EntryPage();
+          return const EntryPage();
         }),
     GoRoute(
         path: "/recipes",
         name: "recipes",
         builder: (context, state) => const RecipesPage()),
+    GoRoute(
+        path: "/recipesByIngredients",
+        name: "recipeByIngredients",
+        builder: (context, state) {
+          return const RecipesByIngredientsPage();
+        }),
     GoRoute(
         path: "/addRecipe",
         name: "addRecipe",
@@ -52,8 +59,15 @@ class RouterServices {
         path: "/ingredients",
         name: "ingredients",
         builder: (context, state) {
-          String? customText = state.extra as String?;
-          return ByIngredientPage(text: customText);
+          Map? mapOfVariables = state.extra as Map?;
+          return mapOfVariables != null
+              ? ByIngredientPage(
+                  text: mapOfVariables.containsKey("text")
+                      ? mapOfVariables["text"]
+                      : null,
+                  findRecipe: mapOfVariables.containsKey("getRecipe") &&
+                      mapOfVariables["getRecipe"])
+              : const ByIngredientPage();
         }),
     GoRoute(
         path: "/login",

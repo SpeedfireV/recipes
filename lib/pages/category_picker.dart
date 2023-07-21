@@ -1,14 +1,7 @@
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:sports/pages/login_page.dart';
-import 'package:sports/services/add_recipe_page.dart';
 import 'package:sports/services/category_picker.dart';
 import 'package:sports/services/firebase.dart';
 import 'package:sports/services/ingredients_page.dart';
@@ -17,9 +10,7 @@ import 'package:sports/widgets/elevated_button.dart';
 
 import '../constants/colors.dart';
 import '../constants/styles.dart';
-import '../services/add_ingredient.dart';
 import '../widgets/page_title.dart';
-import '../widgets/problem_snackbar.dart';
 
 class PickerPage extends StatefulHookConsumerWidget {
   const PickerPage(this.controller, this.hintText, {super.key});
@@ -39,7 +30,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
       backgroundColor: ColorsCustom.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             RouterServices.router.pop();
           },
@@ -66,14 +57,14 @@ class _PickerPageState extends ConsumerState<PickerPage> {
               onTap: () {
                 RouterServices.router.pushNamed("addCategory");
               },
-              title: Text("Add Category"),
-              leading: Icon(Icons.add_rounded),
+              title: const Text("Add Category"),
+              leading: const Icon(Icons.add_rounded),
             ),
             categories.when(
                 loading: () => Container(
-                      padding: EdgeInsets.only(top: 16),
+                      padding: const EdgeInsets.only(top: 16),
                       height: 100,
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           CircularProgressIndicator(),
@@ -88,7 +79,7 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                           (element) => element.toLowerCase().contains(search));
                   return ListView.builder(
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
                       return ListTile(
                         onTap: () {
@@ -142,10 +133,10 @@ class _AddCategoryPageState extends ConsumerState<AddCategoryPage> {
                             RouterServices.router.pop();
                           },
                           icon: Icons.arrow_back),
-                      SizedBox(
+                      const SizedBox(
                         width: 32,
                       ),
-                      PageTitle("Add Recipe")
+                      const PageTitle("Add Recipe")
                     ],
                   ),
                 ),
@@ -176,7 +167,7 @@ class _AddCategoryPageState extends ConsumerState<AddCategoryPage> {
                               borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       /*
                       OutlinedIconButton(
                         errorText: !categoryImagePicked == true
@@ -217,7 +208,7 @@ class _AddCategoryPageState extends ConsumerState<AddCategoryPage> {
                         icon: Icons.image,
                         text: "Select Icon",
                       ),*/
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       CustomElevatedButton(
                           function: () async {
                             if (_categoryKey.currentState!.validate()) {

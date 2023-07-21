@@ -8,7 +8,7 @@ class PageTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
+      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 24),
     );
   }
 }

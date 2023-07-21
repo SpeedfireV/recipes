@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sports/models/ingredient.dart';
@@ -28,6 +27,14 @@ class SelectedIngredients extends _$SelectedIngredients {
 
   addIngredient(Ingredient ingredient) {
     state = [...state, ingredient];
+  }
+
+  changeIngredients(Ingredient ingredient) {
+    if (ingredientExists(ingredient.name)) {
+      deleteIngredient(ingredient.name);
+    } else {
+      addIngredient(ingredient);
+    }
   }
 
   deleteIngredient(String ingredient) {
@@ -82,7 +89,7 @@ class SelectedImages extends _$SelectedImages {
           newMain = true;
         }
         finalState.removeAt(i);
-        if (newMain && finalState.length != 0) {
+        if (newMain && finalState.isNotEmpty) {
           finalState = [
             ImageWithMetadata(image: finalState.elementAt(0).image, main: true),
             ...finalState.sublist(1)

@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sports/models/ingredient.dart';
 import 'package:sports/services/auth.dart';
+import 'package:sports/services/local_database.dart';
 
 import '../models/image.dart';
 import '../models/recipe.dart';
@@ -16,8 +16,8 @@ class FirestoreServices {
     CollectionReference recipes = firestore.collection("recipes");
     recipes
         .add(recipe.toJson())
-        .then((value) => print(value))
-        .catchError((error) => print("failed due to $error"));
+        .then((value) => null)
+        .catchError((error) => debugPrint("failed due to $error"));
   }
 
   Future addCategory(String categoryName) async {
@@ -33,12 +33,10 @@ class FirestoreServices {
   }
 
   Future<bool> profileCreated() async {
-    CollectionReference users = firestore.collection("users");
-    DocumentSnapshot<Map<String, dynamic>> usersData = await FirebaseFirestore
-        .instance
-        .collection('users')
-        .doc(AuthService.currentUid())
-        .get();
+    CollectionReference<Map<String, dynamic>> users =
+        firestore.collection("users");
+    DocumentSnapshot<Map<String, dynamic>> usersData =
+        await users.doc(AuthService.currentUid()).get();
     if (usersData.exists) {
       return true;
     } else {
@@ -98,7 +96,7 @@ class FirestoreServices {
   }
 
   Future<bool> isAdmin() async {
-    CollectionReference users = firestore.collection("users");
+    if (AuthService.currentUid() != null) {}
     DocumentSnapshot<Map<String, dynamic>> usersData = await FirebaseFirestore
         .instance
         .collection('users')
@@ -133,13 +131,13 @@ class StorageServices {
             .putFile(file)
             .then((p0) => print(p0))
             .onError((error, stackTrace) => print('failed due to $error'));
+      } else {
+        storageImages
+            .child("/${images.elementAt(i).image.name}")
+            .putFile(file)
+            .then((p0) => print(p0))
+            .onError((error, stackTrace) => print('failed due to $error'));
       }
-
-      storageImages
-          .child("/${images.elementAt(i).image.name}")
-          .putFile(file)
-          .then((p0) => print(p0))
-          .onError((error, stackTrace) => print('failed due to $error'));
     }
   }
 
@@ -147,7 +145,7 @@ class StorageServices {
     final storageCategories = storage.child("ingredients").child(ingredient);
     final file = File(image.path);
     await storageCategories
-        .child("/${ingredient}")
+        .child("/$ingredient")
         .putFile(file)
         .then((p0) => print(p0))
         .onError((error, stackTrace) => print('failed due to $error'));
@@ -165,20 +163,27 @@ class StorageServices {
     }
   }
 
-  Future<Uint8List?> getMainRecipeImage(String image) async {
-    final storageRecipes = storage.child("recipes").child(image).child("main");
+  Future<Uint8List?> getMainRecipeImage(String imageProvided) async {
+    final storageRecipes =
+        storage.child("recipes").child(imageProvided).child("main");
     String imageName = (await storageRecipes.list()).items.elementAt(0).name;
     try {
       final image = await storageRecipes.child(imageName).getData();
-      return image!;
+      if (image != null) {
+        LocalDatabaseServices().addRecipeImage(imageProvided, image);
+
+        return image;
+      } else {
+        return null;
+      }
     } on FirebaseException catch (e) {
       debugPrint("Error due to $e");
       return null;
     }
   }
 
-  Future<List<Uint8List>?> getRecipeImages(String image) async {
-    final storageRecipes = storage.child("recipes").child(image);
+  Future<List<Uint8List>?> getRecipeImages(String recipeName) async {
+    final storageRecipes = storage.child("recipes").child(recipeName);
     List<Reference> imagesName = (await storageRecipes.list()).items;
     List<Uint8List> images = [];
     for (Reference imageReference in imagesName) {
@@ -186,14 +191,14 @@ class StorageServices {
         String imageName = imageReference.name;
         final image = await storageRecipes.child(imageName).getData();
         if (image != null) images.add(image);
-      } on FirebaseException catch (e) {
-        debugPrint("Error due to $e");
+      } on FirebaseException {
         return null;
       }
     }
-    if (images.length != 0) {
+    if (images.isNotEmpty) {
       return images;
     }
+    return null;
   }
 
   Future<Uint8List?> getIngredientImage(String ingredient) async {
@@ -202,7 +207,7 @@ class StorageServices {
     late String imageName;
     try {
       imageName = items.elementAt(0).name;
-    } on RangeError catch (e) {
+    } on RangeError {
       return null;
     }
     try {

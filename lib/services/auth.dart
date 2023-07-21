@@ -7,12 +7,20 @@ class AuthService {
     return FirebaseAuth.instance.currentUser != null;
   }
 
-  static String currentMail() {
-    return FirebaseAuth.instance.currentUser!.email.toString();
+  static String? currentMail() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      return currentUser.email.toString();
+    }
+    return null;
   }
 
-  static String currentUid() {
-    return FirebaseAuth.instance.currentUser!.uid;
+  static String? currentUid() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      return currentUser.uid;
+    }
+    return null;
   }
 
   static Future logOut() async {

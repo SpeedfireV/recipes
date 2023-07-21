@@ -50,10 +50,10 @@ class _AddIngredientPageState extends ConsumerState<AddIngredientPage> {
                             RouterServices.router.pop();
                           },
                           icon: Icons.arrow_back),
-                      SizedBox(
+                      const SizedBox(
                         width: 32,
                       ),
-                      PageTitle("Add Ingredient")
+                      const PageTitle("Add Ingredient")
                     ],
                   ),
                 ),
@@ -84,7 +84,7 @@ class _AddIngredientPageState extends ConsumerState<AddIngredientPage> {
                               borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       OutlinedIconButton(
                         errorText:
                             !ingredientImagePicked ? "Select an Icon" : null,
@@ -98,7 +98,7 @@ class _AddIngredientPageState extends ConsumerState<AddIngredientPage> {
                           try {
                             result = await FilePicker.platform
                                 .pickFiles(allowMultiple: false);
-                          } on PlatformException catch (e) {
+                          } on PlatformException {
                             showProblemSnackbar(
                                 "You must give permission to choose files",
                                 context);
@@ -107,8 +107,8 @@ class _AddIngredientPageState extends ConsumerState<AddIngredientPage> {
                             CroppedFile? croppedFile = await ImageCropper()
                                 .cropImage(
                                     sourcePath: result.paths.elementAt(0)!,
-                                    aspectRatio:
-                                        CropAspectRatio(ratioX: 1, ratioY: 1));
+                                    aspectRatio: const CropAspectRatio(
+                                        ratioX: 1, ratioY: 1));
 
                             if (croppedFile != null) {
                               File imageFile = File(croppedFile.path);
@@ -123,7 +123,7 @@ class _AddIngredientPageState extends ConsumerState<AddIngredientPage> {
                         icon: Icons.image,
                         text: "Select Icon",
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       CustomElevatedButton(
                           function: () async {
                             if (_categoryKey.currentState!.validate() &&

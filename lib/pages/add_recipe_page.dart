@@ -39,7 +39,6 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
     final descriptionNode = useFocusNode();
     final timeNode = useFocusNode();
     final categoryNode = useFocusNode();
-    final ingredientsNode = useFocusNode();
     final recipeNode = useFocusNode();
 
     final nameController = useTextEditingController();
@@ -48,7 +47,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
     final timeController = useTextEditingController();
     final categoryController = useTextEditingController();
 
-    final currentCategory = ref.watch(categoryProvider);
+    ref.watch(categoryProvider);
     final ingredients = ref.watch(selectedIngredientsProvider);
     final estimatedTime = ref.watch(estimatedTimeProvider);
     final images = ref.watch(selectedImagesProvider);
@@ -66,16 +65,16 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                 padding: const EdgeInsets.only(top: 16.0, bottom: 24),
                 child: Row(
                   children: [
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     OutlinedIconButton(
                         function: () {
                           RouterServices.router.pop();
                         },
                         icon: Icons.arrow_back),
-                    SizedBox(
+                    const SizedBox(
                       width: 32,
                     ),
-                    PageTitle("Add Recipe")
+                    const PageTitle("Add Recipe")
                   ],
                 ),
               ),
@@ -83,7 +82,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: ListView(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     TextFormField(
                       controller: nameController,
@@ -105,7 +104,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                             borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: recipeController,
                       focusNode: recipeNode,
@@ -122,7 +121,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                             borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: descriptionController,
                       focusNode: descriptionNode,
@@ -139,7 +138,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                             borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       readOnly: true,
                       controller: timeController,
@@ -147,7 +146,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                       onTap: () async {
                         Duration? time = await showDurationPicker(
                             context: context,
-                            initialTime: Duration(minutes: 5));
+                            initialTime: const Duration(minutes: 5));
                         if (time != null) {
                           ref.read(estimatedTimeProvider.notifier).state =
                               time.inSeconds;
@@ -165,9 +164,9 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                               Text("Estimated Time", style: Styles.inputStyle),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10)),
-                          suffixIcon: Icon(Icons.schedule)),
+                          suffixIcon: const Icon(Icons.schedule)),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       readOnly: true,
                       focusNode: categoryNode,
@@ -189,14 +188,17 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                           label: Text("Category", style: Styles.inputStyle),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10)),
-                          suffixIcon: Icon(Icons.category_outlined)),
+                          suffixIcon: const Icon(Icons.category_outlined)),
                     ),
-                    SizedBox(height: 10),
-                    ingredients.length == 0
+                    const SizedBox(height: 10),
+                    ingredients.isEmpty
                         ? OutlinedIconButton(
                             function: () {
                               RouterServices.router.pushNamed("ingredients",
-                                  extra: "Submit Ingredients");
+                                  extra: {
+                                    "text": "Submit Ingredients",
+                                    "getRecipe": false
+                                  });
                             },
                             icon: FontAwesomeIcons.bowlFood,
                             text: "Select Ingredients",
@@ -214,7 +216,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 Text(
                                   "Selected Ingredients",
                                   style: TextStyle(
@@ -222,9 +224,9 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                                       fontWeight: FontWeight.w500,
                                       color: ColorsCustom.darkGrey),
                                 ),
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 ListView.builder(
-                                  physics: NeverScrollableScrollPhysics(),
+                                  physics: const NeverScrollableScrollPhysics(),
                                   shrinkWrap: true,
                                   itemBuilder: (context, index) => ListTile(
                                     leading: Image.memory(
@@ -249,26 +251,26 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                                   ),
                                   itemCount: ingredients.length,
                                 ),
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 TextButton(
                                     onPressed: () {
                                       RouterServices.router.pushNamed(
                                           "ingredients",
                                           extra: "Submit Ingredients");
                                     },
-                                    child: Text("Add More")),
+                                    child: const Text("Add More")),
                               ],
                             ),
                           ),
-                    SizedBox(height: 10),
-                    images.length == 0
+                    const SizedBox(height: 10),
+                    images.isEmpty
                         ? OutlinedIconButton(
                             function: () async {
                               late FilePickerResult? result;
                               try {
                                 result = await FilePicker.platform
                                     .pickFiles(allowMultiple: true);
-                              } on PlatformException catch (e) {
+                              } on PlatformException {
                                 showProblemSnackbar(
                                     "You must give permission to choose files",
                                     context);
@@ -303,7 +305,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 Text(
                                   "Selected Images",
                                   style: TextStyle(
@@ -311,12 +313,13 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                                       fontWeight: FontWeight.w500,
                                       color: ColorsCustom.darkGrey),
                                 ),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
                                   child: GridView.builder(
-                                    physics: NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     gridDelegate:
                                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -396,7 +399,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                                                             )),
                                                       ),
                                                     ),
-                                                    SizedBox(width: 6),
+                                                    const SizedBox(width: 6),
                                                     Material(
                                                       elevation: 2,
                                                       borderRadius:
@@ -409,14 +412,14 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                                                               builder:
                                                                   (context) =>
                                                                       AlertDialog(
-                                                                        icon: Icon(
+                                                                        icon: const Icon(
                                                                             FontAwesomeIcons.image),
-                                                                        title: Text(
+                                                                        title: const Text(
                                                                             "Delete Image"),
                                                                         content:
-                                                                            Padding(
+                                                                            const Padding(
                                                                           padding:
-                                                                              const EdgeInsets.only(top: 8.0),
+                                                                              EdgeInsets.only(top: 8.0),
                                                                           child:
                                                                               Text("You are going to delete an image."),
                                                                         ),
@@ -438,7 +441,7 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                                                                                     ref.read(selectedImagesProvider.notifier).deleteImage(images.elementAt(index).image.name);
                                                                                     RouterServices.router.pop();
                                                                                   },
-                                                                                  child: Text(
+                                                                                  child: const Text(
                                                                                     "Delete Image",
                                                                                     style: TextStyle(color: Colors.red),
                                                                                   )),
@@ -485,14 +488,14 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                                     itemCount: images.length,
                                   ),
                                 ),
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 TextButton(
                                     onPressed: () async {
                                       late FilePickerResult? result;
                                       try {
                                         result = await FilePicker.platform
                                             .pickFiles(allowMultiple: true);
-                                      } on PlatformException catch (e) {
+                                      } on PlatformException {
                                         showProblemSnackbar(
                                             "You must give permission to choose files",
                                             context);
@@ -501,25 +504,26 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                                       if (result != null) {
                                         List<ImageWithMetadata>
                                             imagesWithMetadata = [];
-                                        result.files.forEach((image) {
+                                        for (PlatformFile image
+                                            in result.files) {
                                           imagesWithMetadata.add(
                                               ImageWithMetadata(
                                                   image: image, main: false));
-                                        });
+                                        }
                                         ref
                                             .read(
                                                 selectedImagesProvider.notifier)
                                             .addImages(imagesWithMetadata);
                                       }
                                     },
-                                    child: Text("Add More")),
+                                    child: const Text("Add More")),
                               ],
                             ),
                           ),
                   ],
                 ),
               ),
-              SizedBox(height: 90)
+              const SizedBox(height: 90)
             ],
           ),
           Align(
@@ -530,12 +534,12 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
                 text: "Add Recipe",
                 function: () async {
                   if (_formKey.currentState!.validate() &&
-                      ingredients.length != 0 &&
-                      images.length != 0) {
+                      ingredients.isNotEmpty &&
+                      images.isNotEmpty) {
                     List<String> ingredientsName = [];
-                    ingredients.forEach((element) {
+                    for (var element in ingredients) {
                       ingredientsName.add(element.name);
-                    });
+                    }
                     await FirestoreServices().addRecipe(Recipe(
                         name: nameController.text,
                         recipe: recipeController.text,
@@ -549,11 +553,11 @@ class _AddRecipePageState extends ConsumerState<AddRecipePage> {
 
                     RouterServices.router.pop();
                   } else {
-                    if (ingredients.length == 0) {
+                    if (ingredients.isEmpty) {
                       ref.read(ingredientsSelectedProvider.notifier).state =
                           false;
                     }
-                    if (images.length == 0) {
+                    if (images.isEmpty) {
                       ref.read(imagesSelectedProvider.notifier).state = false;
                     }
                   }

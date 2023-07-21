@@ -1,21 +1,19 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sports/constants/colors.dart';
-import 'package:sports/constants/images.dart';
 import 'package:sports/functions/time.dart';
 import 'package:sports/models/food_item.dart';
 import 'package:sports/pages/login_page.dart';
+import 'package:sports/services/add_recipe_page.dart';
 import 'package:sports/services/auth.dart';
 import 'package:sports/services/category_picker.dart';
 import 'package:sports/services/firebase.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/recipes_page.dart';
 import 'package:sports/services/router.dart';
+import 'package:sports/widgets/problem_snackbar.dart';
 
 import '../widgets/elevated_button.dart';
 
@@ -27,23 +25,38 @@ class RecipesPage extends StatefulHookConsumerWidget {
 }
 
 class _RecipesPageState extends ConsumerState<RecipesPage> {
+  final scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController.addListener(() {
+      ref.read(scrollPositionProvider.notifier).state =
+          scrollController.position.pixels.toInt();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     bool loggedIn = ref.watch(loggedInProvider);
-    final GlobalKey<ScaffoldState> _key = GlobalKey();
-    final scrollController = useScrollController();
     final recipes = ref.watch(recipesProvider);
     final categories = ref.watch(categoriesProvider);
     final categoryFilter = ref.watch(categoryFilterProvider);
+    final scrollPosition = ref.watch(scrollPositionProvider);
 
     return Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            //TODO: To the top
-          },
-          child: Icon(Icons.arrow_upward_rounded),
-        ),
-        drawer: Drawer(child: Text("Working")),
+        floatingActionButton: scrollPosition > 70
+            ? FloatingActionButton(
+                backgroundColor: ColorsCustom.green,
+                onPressed: () {
+                  scrollController.animateTo(0,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.ease);
+                },
+                child: const Icon(Icons.arrow_upward_rounded),
+              )
+            : null,
+        drawer: const Drawer(child: Text("Working")),
         backgroundColor: ColorsCustom.background,
         body: ListView(
           controller: scrollController,
@@ -63,7 +76,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                             if (loggedIn) {
                               showDialog(
                                   context: context,
-                                  builder: (context) => LogOutDialog());
+                                  builder: (context) => const LogOutDialog());
                             } else {
                               RouterServices.router.pushNamed("login");
                             }
@@ -97,8 +110,20 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                       const SizedBox(height: 10),
                       CustomElevatedButton(
                           icon: FontAwesomeIcons.utensils,
-                          function: () =>
-                              RouterServices.router.pushNamed("ingredients"),
+                          function: () {
+                            if (AuthService.loggedIn()) {
+                              ref
+                                  .read(selectedIngredientsProvider.notifier)
+                                  .clearIngredients();
+                              RouterServices.router.pushNamed("ingredients",
+                                  extra: {"getRecipe": true});
+                            } else {
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              showProblemSnackbar(
+                                  "You have to log in to use this fuction",
+                                  context);
+                            }
+                          },
                           text: "Find Dish By Ingredients"),
                       const SizedBox(height: 20),
                       Text(
@@ -138,13 +163,16 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                                     const SizedBox(width: 12),
                               );
                             },
-                            error: (error, stackTrace) => Text("Error"),
+                            error: (error, stackTrace) => const Text("Error"),
                             loading: () {
                               return ListView.separated(
-                                physics: NeverScrollableScrollPhysics(),
+                                physics: const NeverScrollableScrollPhysics(),
                                 scrollDirection: Axis.horizontal,
                                 itemBuilder: (context, index) {
                                   return Shimmer.fromColors(
+                                      baseColor: ColorsCustom.lightGrey
+                                          .withOpacity(0.3),
+                                      highlightColor: ColorsCustom.background,
                                       child: Container(
                                         decoration: BoxDecoration(
                                             color: Colors.white,
@@ -152,10 +180,7 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                                                 BorderRadius.circular(24)),
                                         width: 140,
                                         height: 50,
-                                      ),
-                                      baseColor: ColorsCustom.lightGrey
-                                          .withOpacity(0.3),
-                                      highlightColor: ColorsCustom.background);
+                                      ));
                                 },
                                 itemCount: 4,
                                 separatorBuilder: (context, index) =>
@@ -164,68 +189,84 @@ class _RecipesPageState extends ConsumerState<RecipesPage> {
                             }),
                       ),
                       const SizedBox(height: 20),
-                      recipes.when(
-                          data: (data) {
-                            if (categoryFilter == "All") {
-                              return GridView.builder(
-                                  itemCount: data.length,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisSpacing: 20,
-                                          mainAxisSpacing: 20,
-                                          childAspectRatio: 6 / 7,
-                                          crossAxisCount: 2),
-                                  itemBuilder: (context, index) {
-                                    final currentRecipe = data.elementAt(index);
-                                    return FoodItemElement(
-                                        item: FoodItem(
-                                            name: currentRecipe.name,
-                                            description:
-                                                currentRecipe.description,
-                                            category: currentRecipe.category,
-                                            rating: 45,
-                                            time: currentRecipe.estimatedTime,
-                                            ingredients:
-                                                currentRecipe.ingredients,
-                                            recipe: currentRecipe.recipe));
-                                  });
-                            } else {
-                              final filteredItems = data.where((element) =>
-                                  element.category == categoryFilter);
-                              return GridView.builder(
-                                  itemCount: filteredItems.length,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisSpacing: 20,
-                                          mainAxisSpacing: 20,
-                                          childAspectRatio: 6 / 7,
-                                          crossAxisCount: 2),
-                                  itemBuilder: (context, index) {
-                                    final currentRecipe =
-                                        filteredItems.elementAt(index);
-                                    return FoodItemElement(
-                                        item: FoodItem(
-                                            name: currentRecipe.name,
-                                            description:
-                                                currentRecipe.description,
-                                            category: currentRecipe.category,
-                                            rating: 45,
-                                            time: currentRecipe.estimatedTime,
-                                            ingredients:
-                                                currentRecipe.ingredients,
-                                            recipe: currentRecipe.recipe));
-                                  });
-                            }
+                      recipes.when(data: (data) {
+                        if (categoryFilter == "All") {
+                          return GridView.builder(
+                              itemCount: data.length,
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisSpacing: 20,
+                                      mainAxisSpacing: 20,
+                                      childAspectRatio: 6 / 7,
+                                      crossAxisCount: 2),
+                              itemBuilder: (context, index) {
+                                final currentRecipe = data.elementAt(index);
+                                return FoodItemElement(
+                                    item: FoodItem(
+                                        name: currentRecipe.name,
+                                        description: currentRecipe.description,
+                                        category: currentRecipe.category,
+                                        rating: 45,
+                                        time: currentRecipe.estimatedTime,
+                                        ingredients: currentRecipe.ingredients,
+                                        recipe: currentRecipe.recipe));
+                              });
+                        } else {
+                          final filteredItems = data.where(
+                              (element) => element.category == categoryFilter);
+                          return GridView.builder(
+                              itemCount: filteredItems.length,
+                              physics: const NeverScrollableScrollPhysics(),
+                              shrinkWrap: true,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisSpacing: 20,
+                                      mainAxisSpacing: 20,
+                                      childAspectRatio: 6 / 7,
+                                      crossAxisCount: 2),
+                              itemBuilder: (context, index) {
+                                final currentRecipe =
+                                    filteredItems.elementAt(index);
+                                return FoodItemElement(
+                                    item: FoodItem(
+                                        name: currentRecipe.name,
+                                        description: currentRecipe.description,
+                                        category: currentRecipe.category,
+                                        rating: 45,
+                                        time: currentRecipe.estimatedTime,
+                                        ingredients: currentRecipe.ingredients,
+                                        recipe: currentRecipe.recipe));
+                              });
+                        }
+                      }, error: (error, errorStack) {
+                        return const Text("data");
+                      }, loading: () {
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisSpacing: 20,
+                                  mainAxisSpacing: 20,
+                                  childAspectRatio: 6 / 7,
+                                  crossAxisCount: 2),
+                          itemBuilder: (context, index) {
+                            return Shimmer.fromColors(
+                                baseColor:
+                                    ColorsCustom.lightGrey.withOpacity(0.3),
+                                highlightColor: ColorsCustom.background,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10)),
+                                ));
                           },
-                          error: (error, errorStack) {
-                            return Text("data");
-                          },
-                          loading: () => Container()),
-                      const SizedBox(height: 40)
+                          itemCount: 4,
+                        );
+                      }),
+                      const SizedBox(height: 80)
                     ],
                   ),
                 ),
@@ -288,18 +329,21 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
   @override
   Widget build(BuildContext context) {
     final FoodItem item = widget.item;
-    Future<Uint8List?> _getMainRecipeImage =
-        StorageServices().getMainRecipeImage(item.name);
-    return Material(
-      borderRadius: BorderRadius.circular(10),
-      elevation: 5,
-      child: InkWell(
+    final recipeMainImage = ref.watch(recipeMainImageProvider(item.name));
+    return InkWell(
         onTap: () {
           RouterServices.router.pushNamed("recipe", extra: item);
         },
         child: Ink(
           decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(10)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                    offset: const Offset(0, 2),
+                    color: ColorsCustom.lightGrey.withOpacity(0.9),
+                    blurRadius: 3)
+              ]),
           child: Stack(
             children: [
               Column(
@@ -309,32 +353,42 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      FutureBuilder(
-                          future: _getMainRecipeImage,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
+                      ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: recipeMainImage.when(
+                            skipLoadingOnReload: false,
+                            data: (data) {
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                child: Image.memory(
-                                  snapshot.data!,
-                                  fit: BoxFit.fill,
-                                  width: 130,
-                                  height: 130,
+                                child: Hero(
+                                  tag: item.name,
+                                  child: Image.memory(
+                                    data!,
+                                    fit: BoxFit.fill,
+                                    width: 130,
+                                    height: 130,
+                                  ),
                                 ),
                               );
-                            }
-                            return Shimmer.fromColors(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10)),
-                                  width: 130,
-                                  height: 130,
-                                ),
-                                baseColor:
-                                    ColorsCustom.lightGrey.withOpacity(0.3),
-                                highlightColor: ColorsCustom.background);
-                          })
+                            },
+                            loading: () {
+                              return Shimmer.fromColors(
+                                  baseColor:
+                                      ColorsCustom.lightGrey.withOpacity(0.3),
+                                  highlightColor: ColorsCustom.background,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    width: 130,
+                                    height: 130,
+                                  ));
+                            },
+                            error: (error, stackTrace) {
+                              return Text("Error due to $error");
+                            },
+                          ))
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -364,9 +418,7 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                       Text(
                         item.rating < 10
                             ? "0.${item.rating}"
-                            : item.rating.toString().substring(0, 1) +
-                                "." +
-                                item.rating.toString().substring(1),
+                            : "${item.rating.toString().substring(0, 1)}.${item.rating.toString().substring(1)}",
                         style: TextStyle(color: ColorsCustom.grey),
                       )
                     ],
@@ -375,9 +427,7 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
               ),
             ],
           ),
-        ),
-      ),
-    );
+        ));
   }
 }
 
@@ -391,12 +441,13 @@ class _LogOutDialogState extends ConsumerState<LogOutDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      icon: Icon(FontAwesomeIcons.envelope),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      icon: const Icon(FontAwesomeIcons.envelope),
       title: Text(
-        AuthService.currentMail(),
+        AuthService.currentMail()!,
       ),
-      content: Padding(
-        padding: const EdgeInsets.only(top: 8.0),
+      content: const Padding(
+        padding: EdgeInsets.only(top: 8.0),
         child: Text("You are going to log out."),
       ),
       actions: [
@@ -413,9 +464,12 @@ class _LogOutDialogState extends ConsumerState<LogOutDialog> {
                       snapshot.data!) {
                     debugPrint("seems to work");
                     return TextButton(
-                      child: Text("Add Recipe"),
+                      child: const Text("Add Recipe"),
                       onPressed: () {
                         RouterServices.router.pop();
+                        ref
+                            .read(selectedIngredientsProvider.notifier)
+                            .clearIngredients();
                         RouterServices.router.pushNamed("addRecipe");
                       },
                     );
@@ -439,7 +493,7 @@ class _LogOutDialogState extends ConsumerState<LogOutDialog> {
                   ref.read(loggedInProvider.notifier).state = false;
                   RouterServices.router.pop();
                 },
-                child: Text(
+                child: const Text(
                   "Log Out",
                   style: TextStyle(color: Colors.red),
                 )),

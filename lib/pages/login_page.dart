@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sports/constants/colors.dart';
@@ -42,7 +41,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           Expanded(
@@ -55,9 +54,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         RouterServices.router
                                             .goNamed("recipes");
                                       },
-                                      icon: Icon(Icons.close)),
+                                      icon: const Icon(Icons.close)),
                                 ),
-                                Align(
+                                const Align(
                                   alignment: Alignment.center,
                                   child: Image(
                                       width: 200,
@@ -75,7 +74,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           key: _formKey,
                           child: Column(
                             children: [
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               TextFormField(
                                 focusNode: mailNode,
                                 controller: mailController,
@@ -101,9 +100,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 decoration: InputDecoration(
                                     label:
                                         Text("Mail", style: Styles.inputStyle),
-                                    border: OutlineInputBorder()),
+                                    border: const OutlineInputBorder()),
                               ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               TextFormField(
                                 keyboardType: TextInputType.visiblePassword,
                                 focusNode: passwordNode,
@@ -128,7 +127,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 decoration: InputDecoration(
                                     label: Text("Password",
                                         style: Styles.inputStyle),
-                                    border: OutlineInputBorder(),
+                                    border: const OutlineInputBorder(),
                                     suffixIcon: IconButton(
                                       color: ColorsCustom.lightGreen,
                                       icon: Icon(visible
@@ -143,7 +142,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       },
                                     )),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               Row(
@@ -156,7 +155,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                             await AuthService.registerUser(
                                                 mailController.text,
                                                 passwordController.text);
-                                          } on FirebaseAuthException catch (e) {
+                                          } on FirebaseAuthException {
                                             await AuthService.loginUser(
                                                 mailController.text,
                                                 passwordController.text);
@@ -168,26 +167,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                               .goNamed("recipes");
                                         }
                                       },
-                                      child: Text(
+                                      style: const ButtonStyle(
+                                          minimumSize: MaterialStatePropertyAll(
+                                              Size(0, 60))),
+                                      child: const Text(
                                         "Login",
                                         style: TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w600),
                                       ),
-                                      style: ButtonStyle(
-                                          minimumSize: MaterialStatePropertyAll(
-                                              Size(0, 60))),
                                     ),
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               Text("OR",
                                   style: TextStyle(
                                       fontSize: 19,
                                       fontWeight: FontWeight.w600,
                                       color: ColorsCustom.darkGrey)),
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               OutlinedIconButton(
                                 function: () async {
                                   final google =
