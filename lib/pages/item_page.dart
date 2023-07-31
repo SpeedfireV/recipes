@@ -12,6 +12,7 @@ import 'package:sports/pages/login_page.dart';
 import 'package:sports/services/item_page.dart';
 import 'package:sports/services/local_database.dart';
 import 'package:sports/services/router.dart';
+import 'package:sports/widgets/problem_snackbar.dart';
 
 class RecipePage extends StatefulHookConsumerWidget {
   const RecipePage({super.key, required this.item});
@@ -27,6 +28,7 @@ class _RecipePageState extends ConsumerState<RecipePage> {
     int currentTab = ref.watch(tabSelectorProvider);
     int imagePosition = ref.watch(imagePositionProvider);
     FoodItem item = widget.item;
+    final likedStream = ref.watch(likedStreamProvider);
     final recipeImages = ref.watch(recipeImagesProvider(item.name));
     return Scaffold(
       backgroundColor: ColorsCustom.background,
@@ -48,10 +50,55 @@ class _RecipePageState extends ConsumerState<RecipePage> {
                       icon: Icons.arrow_back,
                       color: ColorsCustom.darkGrey,
                     ),
-                    OutlinedIconButton(
-                      function: () {},
-                      icon: Icons.favorite,
-                      color: Colors.green[700]!,
+                    likedStream.when(
+                      data: (data) {
+                        List<dynamic> likedList =
+                            data.data()!["liked"] as List<dynamic>;
+                        return OutlinedIconButton(
+                          function: () async {
+                            late bool isLoggedIn;
+                            if (likedList.contains(item.name)) {
+                              isLoggedIn = await ref
+                                  .read(likedStreamProvider.notifier)
+                                  .unlikeRecipe(item.name);
+                            } else {
+                              isLoggedIn = await ref
+                                  .read(likedStreamProvider.notifier)
+                                  .likeRecipe(item.name);
+                            }
+
+                            if (!isLoggedIn) {
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              showProblemSnackbar(
+                                  "You Must Log In To Like", context);
+                            }
+                          },
+                          icon: likedList.contains(item.name)
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_outline_rounded,
+                          color: Colors.green[700]!,
+                        );
+                      },
+                      loading: () {
+                        return OutlinedIconButton(
+                          function: () async {
+                            bool isLoggedIn = await ref
+                                .read(likedStreamProvider.notifier)
+                                .likeRecipe(item.name);
+                            if (!isLoggedIn) {
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              showProblemSnackbar(
+                                  "You Must Log In To Like", context);
+                            }
+                          },
+                          icon: Icons.favorite_outline_rounded,
+                          color: Colors.green[700]!,
+                        );
+                      },
+                      error: (error, stackTrace) {
+                        debugPrint("Error due to $error");
+                        return Text("Error due to $error");
+                      },
                     )
                   ],
                 ),
@@ -157,18 +204,6 @@ class _RecipePageState extends ConsumerState<RecipePage> {
                     const SizedBox(width: 2),
                     Text(
                       formatTime(item.time),
-                      style: TextStyle(color: ColorsCustom.grey),
-                    ),
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.star,
-                      color: ColorsCustom.lightGreen,
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      item.rating < 10
-                          ? "0.${item.rating}"
-                          : "${item.rating.toString().substring(0, 1)}.${item.rating.toString().substring(1)}",
                       style: TextStyle(color: ColorsCustom.grey),
                     )
                   ],

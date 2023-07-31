@@ -410,17 +410,6 @@ class _FoodItemElementState extends ConsumerState<FoodItemElement> {
                             fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(
-                        Icons.star,
-                        color: Colors.amber,
-                        size: 20,
-                      ),
-                      Text(
-                        item.rating < 10
-                            ? "0.${item.rating}"
-                            : "${item.rating.toString().substring(0, 1)}.${item.rating.toString().substring(1)}",
-                        style: TextStyle(color: ColorsCustom.grey),
-                      )
                     ],
                   )
                 ],

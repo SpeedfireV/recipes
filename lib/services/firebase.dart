@@ -17,7 +17,7 @@ class FirestoreServices {
     recipes
         .add(recipe.toJson())
         .then((value) => null)
-        .catchError((error) => debugPrint("failed due to $error"));
+        .catchError((error) => print("failed due to $error"));
   }
 
   Future addCategory(String categoryName) async {
@@ -25,11 +25,53 @@ class FirestoreServices {
     categories.add({"category": categoryName});
   }
 
-  //TODO: Check in Firebase if Image uploaded
   Future addIngredient(String ingredient, File image) async {
     CollectionReference ingredients = firestore.collection("ingredients");
     (await StorageServices().addIngredient(ingredient, image));
     ingredients.add({"ingredient": ingredient});
+  }
+
+  Future<bool> likeRecipe(String recipe) async {
+    if (!AuthService.loggedIn()) {
+      return false;
+    }
+    DocumentSnapshot<Map<String, dynamic>> userDoc =
+        await firestore.collection("users").doc(AuthService.currentUid()).get();
+
+    if (userDoc.exists) {
+      if (userDoc.data()!.containsKey("liked")) {
+        await firestore.collection("users").doc(AuthService.currentUid()).set({
+          "liked": [...(await userDoc.data()!["liked"]), recipe]
+        });
+
+        return true;
+      } else {
+        await firestore.collection("users").doc(AuthService.currentUid()).set({
+          "liked": [recipe]
+        });
+        return true;
+      }
+    }
+    return true;
+  }
+
+  Future<bool> unlikeRecipe(String recipe) async {
+    DocumentSnapshot<Map<String, dynamic>> userDoc =
+        await firestore.collection("users").doc(AuthService.currentUid()).get();
+
+    if (userDoc.exists) {
+      if (userDoc.data()!.containsKey("liked")) {
+        List<dynamic> currentlyLiked = await userDoc.data()!["liked"];
+        currentlyLiked.remove(recipe);
+
+        await firestore.collection("users").doc(AuthService.currentUid()).set({
+          "liked": [...currentlyLiked]
+        });
+
+        return true;
+      }
+    }
+    return true;
   }
 
   Future<bool> profileCreated() async {
@@ -56,7 +98,7 @@ class FirestoreServices {
     yield* stream;
   }
 
-  Stream<List<Future<Ingredient>>> getIngredients() async* {
+  Stream<List<Future<Ingredient>>> getIngredientsStream() async* {
     CollectionReference ingredients = firestore.collection("ingredients");
     final Stream<QuerySnapshot> snapshots = ingredients.snapshots();
     final stream = snapshots.map((snapshot) {
@@ -71,6 +113,16 @@ class FirestoreServices {
       }).toList();
       return result;
     });
+    yield* stream;
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getLikedRecipes() async* {
+    Stream<DocumentSnapshot<Map<String, dynamic>>>? snapshots =
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(AuthService.currentUid())
+            .snapshots();
+    final stream = snapshots;
     yield* stream;
   }
 
@@ -96,7 +148,6 @@ class FirestoreServices {
   }
 
   Future<bool> isAdmin() async {
-    if (AuthService.currentUid() != null) {}
     DocumentSnapshot<Map<String, dynamic>> usersData = await FirebaseFirestore
         .instance
         .collection('users')

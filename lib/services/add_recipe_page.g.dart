@@ -7,7 +7,7 @@ part of 'add_recipe_page.dart';
 // **************************************************************************
 
 String _$selectedIngredientsHash() =>
-    r'adf9682ea585c480d4ca84a90a967815684f63c2';
+    r'ff5be349d7e68676f85cc036f8cf569d1e8695d2';
 
 /// See also [SelectedIngredients].
 @ProviderFor(SelectedIngredients)
@@ -23,7 +23,7 @@ final selectedIngredientsProvider =
 );
 
 typedef _$SelectedIngredients = AutoDisposeNotifier<List<Ingredient>>;
-String _$selectedImagesHash() => r'f63f1eb12c36a79b356cbcbaf466449ae4ac2bf3';
+String _$selectedImagesHash() => r'f8066ff1e2f2de3be3015bc151df24b016b2c4fe';
 
 /// See also [SelectedImages].
 @ProviderFor(SelectedImages)

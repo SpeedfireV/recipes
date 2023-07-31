@@ -86,7 +86,6 @@ class _PickerPageState extends ConsumerState<PickerPage> {
                           widget.controller.text =
                               filteredData.elementAt(index);
                           RouterServices.router.pop();
-                          // TODO: Image Category
                         },
                         selected: false,
                         title: Text(filteredData.elementAt(index)),

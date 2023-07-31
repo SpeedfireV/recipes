@@ -11,7 +11,7 @@ part 'add_ingredient.g.dart';
 class IngredientsStream extends _$IngredientsStream {
   @override
   Stream<List<Future<Ingredient>>> build() async* {
-    yield* FirestoreServices().getIngredients();
+    yield* FirestoreServices().getIngredientsStream();
   }
 }
 
